@@ -154,7 +154,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.user) {
         await supabase.from(TABLES.profiles).upsert({
           id: data.user.id,
-          email: data.user.email,
           full_name: fullName,
         });
         await supabase

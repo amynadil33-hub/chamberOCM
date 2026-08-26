@@ -1,4 +1,4 @@
--- 0006_storage_buckets_and_policies.sql
+-- 0007_storage_buckets_and_policies.sql
 -- Storage buckets and access policies.
 
 insert into storage.buckets (id, name, public)

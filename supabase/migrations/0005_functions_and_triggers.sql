@@ -1,7 +1,6 @@
--- 0007_functions_and_triggers.sql
+-- 0005_functions_and_triggers.sql
 -- Helper functions, reference generators and triggers.
--- Apply BEFORE 0005_rls_and_grants.sql if you re-order migrations, because the
--- RLS policies reference these functions.
+-- This migration runs before RLS because its policies reference these helpers.
 
 -- ------------------------------ ROLE HELPERS --------------------------------
 create or replace function public.has_app_role(required_role app_role)

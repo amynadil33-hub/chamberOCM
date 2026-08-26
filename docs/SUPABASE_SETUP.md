@@ -26,10 +26,9 @@ Run the files in `supabase/migrations/` through the SQL editor or the Supabase C
 2. `0002_core_schema.sql`
 3. `0003_content_schema.sql`
 4. `0004_membership_schema.sql`
-5. `0007_functions_and_triggers.sql` — **run before the RLS file**, because the policies
-   reference the helper functions it creates
-6. `0005_rls_and_grants.sql`
-7. `0006_storage_buckets_and_policies.sql`
+5. `0005_functions_and_triggers.sql`
+6. `0006_rls_and_grants.sql`
+7. `0007_storage_buckets_and_policies.sql`
 
 ## 5. Run the seed file
 Execute `supabase/seed.sql`. Every row is flagged `is_demo = true` so it can be removed

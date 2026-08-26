@@ -32,4 +32,4 @@ session in `localStorage`, exposes `useAuth()`, and provides `RequireAuth` and
   originally requested path.
 - `RequireRole` — redirects users without the required role to `/auth/unauthorized`.
 - Interface restrictions are never the only protection: the same rules are enforced by
-  Row Level Security in `supabase/migrations/0005_rls_and_grants.sql`.
+  Row Level Security in `supabase/migrations/0006_rls_and_grants.sql`.

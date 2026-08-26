@@ -1,6 +1,5 @@
--- 0005_rls_and_grants.sql
--- Row Level Security. Helper functions are defined in 0007_functions_and_triggers.sql;
--- apply that migration before this one if you re-order files.
+-- 0006_rls_and_grants.sql
+-- Row Level Security. Helper functions are defined in the preceding migration.
 
 alter table public.profiles                enable row level security;
 alter table public.user_roles              enable row level security;
