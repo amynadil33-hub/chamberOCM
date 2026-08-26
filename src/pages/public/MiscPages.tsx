@@ -22,8 +22,6 @@ import { dataProvider } from '@/lib/data/provider';
 import { siteConfig } from '@/lib/config';
 import { formatDate } from '@/lib/utils/format';
 
-const CRM_ENDPOINT = 'https://famous.ai/api/crm/6a78b6e4f54643f61c865c39/subscribe';
-
 export const PartnersPage: React.FC = () => {
   usePageMeta('Partners', 'Patron and strategic partners of the chamber.');
   const { data: partners = [] } = useQuery({ queryKey: ['partners'], queryFn: () => dataProvider.partners() });
@@ -89,7 +87,6 @@ export const ContactPage: React.FC = () => {
     subject: '',
     message: '',
     privacy: false,
-    smsOptIn: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -107,22 +104,6 @@ export const ContactPage: React.FC = () => {
     if (Object.keys(next).length > 0) return;
 
     setLoading(true);
-    try {
-      await fetch(CRM_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: form.email,
-          name: form.name,
-          phone: form.phone || undefined,
-          sms_opt_in: form.smsOptIn === true,
-          source: 'contact-form',
-          tags: ['contact-form', form.department.toLowerCase().replace(/\s/g, '-')],
-        }),
-      });
-    } catch {
-      /* contact submission still recorded locally below */
-    }
     await dataProvider.createInquiry({
       department: form.department,
       name: form.name,
@@ -220,15 +201,6 @@ export const ContactPage: React.FC = () => {
                     />
                     <FieldError message={errors.message} />
                   </div>
-                  <label className="flex items-start gap-2.5 text-[13px] leading-relaxed text-ink-soft">
-                    <input
-                      type="checkbox"
-                      checked={form.smsOptIn}
-                      onChange={(e) => setForm({ ...form, smsOptIn: e.target.checked })}
-                      className="mt-0.5 h-4 w-4 rounded border-surface-border text-brand focus:ring-brand"
-                    />
-                    <span>Text me updates. Msg &amp; data rates may apply. Reply STOP to unsubscribe.</span>
-                  </label>
                   <div>
                     <label className="flex items-start gap-2.5 text-[13px] leading-relaxed text-ink-soft">
                       <input

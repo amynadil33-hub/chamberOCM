@@ -7,16 +7,12 @@ import { footerColumns } from '@/lib/navigation';
 import { siteConfig } from '@/lib/config';
 import { dataProvider } from '@/lib/data/provider';
 
-const CRM_ENDPOINT = 'https://famous.ai/api/crm/6a78b6e4f54643f61c865c39/subscribe';
-
 export const NewsletterForm: React.FC<{ source?: string; compact?: boolean }> = ({
   source = 'footer-signup',
   compact,
 }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [smsOptIn, setSmsOptIn] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,18 +25,6 @@ export const NewsletterForm: React.FC<{ source?: string; compact?: boolean }> = 
     setError('');
     setLoading(true);
     try {
-      await fetch(CRM_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          name: name || undefined,
-          phone: phone || undefined,
-          sms_opt_in: smsOptIn === true,
-          source,
-          tags: ['newsletter', 'mcci-website'],
-        }),
-      });
       await dataProvider.addSubscriber(email, name || undefined);
       toast({
         title: 'Subscription confirmed',
@@ -48,7 +32,6 @@ export const NewsletterForm: React.FC<{ source?: string; compact?: boolean }> = 
       });
       setName('');
       setEmail('');
-      setPhone('');
     } catch {
       toast({
         title: 'Subscription could not be completed',
@@ -90,29 +73,6 @@ export const NewsletterForm: React.FC<{ source?: string; compact?: boolean }> = 
         />
         <FieldError message={error} />
       </div>
-      <div>
-        <FieldLabel htmlFor={`nl-phone-${source}`}>Phone number (optional)</FieldLabel>
-        <input
-          id={`nl-phone-${source}`}
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className={inputClass}
-          placeholder="+960 000 0000"
-          autoComplete="tel"
-        />
-      </div>
-      <label className="flex items-start gap-2.5 text-[12px] leading-relaxed text-ink-soft">
-        <input
-          type="checkbox"
-          checked={smsOptIn}
-          onChange={(e) => setSmsOptIn(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-surface-border text-brand focus:ring-brand"
-        />
-        <span>
-          Text me updates. Msg &amp; data rates may apply. Reply STOP to unsubscribe.
-        </span>
-      </label>
       <Button type="submit" loading={loading} className="w-full">
         Subscribe to the bulletin
       </Button>

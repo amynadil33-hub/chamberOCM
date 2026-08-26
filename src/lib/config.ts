@@ -67,8 +67,7 @@ export function validateEnvironment(): string[] {
 export const isMockMode = envConfig.dataMode === 'mock';
 export const isDatabaseMode = envConfig.dataMode === 'database';
 
-export const LOGO_URL =
-  'https://d64gsuwffb70l.cloudfront.net/6a77b4748b67a6596efda74a_1786295874394_8dca9a57.png';
+export const LOGO_URL = '/mcci-logo.png';
 
 
 export const siteConfig = {
