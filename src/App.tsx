@@ -2,114 +2,133 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { lazy, Suspense, type ComponentType } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
-import { AuthProvider, RequireAuth, RequireRole } from '@/lib/auth/AuthProvider';
+import { AuthLoading, AuthProvider, RequireAuth, RequireRole } from '@/lib/auth/AuthProvider';
 
-import PublicLayout from '@/components/layout/PublicLayout';
-import Index from './pages/Index';
+const lazyNamed = (loader: () => Promise<unknown>, exportName: string) =>
+  lazy(async () => {
+    const loaded = (await loader()) as Record<string, ComponentType>;
+    return { default: loaded[exportName] };
+  });
 
-import {
-  AboutPage,
-  CorporateProfilePage,
-  HistoryPage,
-  LeadershipPage,
-  MissionVisionPage,
-} from '@/pages/public/AboutPages';
-import { CouncilDetailPage, CouncilsPage } from '@/pages/public/CouncilPages';
-import {
-  EconomicResearchPage,
-  InternationalTradePage,
-  LegislativeAffairsPage,
-  PolicyDetailPage,
-  PolicyPage,
-  PolicyPositionsPage,
-  PolicySubmissionDetailPage,
-  PolicySubmissionsPage,
-  RegulatoryAffairsPage,
-} from '@/pages/public/PolicyPages';
-import {
-  MembershipBenefitsPage,
-  MembershipPage,
-  MembershipRenewalPage,
-  MembershipTiersPage,
-} from '@/pages/public/MembershipPages';
-import { MemberDetailPage, MemberDirectoryPage } from '@/pages/public/DirectoryPages';
-import { EventDetailPage, EventsCalendarPage, EventsPage } from '@/pages/public/EventsPages';
-import { NewsDetailPage, NewsPage } from '@/pages/public/NewsPages';
-import {
-  AnnualReportsPage,
-  PublicationDetailPage,
-  PublicationsPage,
-} from '@/pages/public/PublicationPages';
-import {
-  MsmeDirectoryPage,
-  MsmeEventsPage,
-  MsmePage,
-  MsmeProgramsPage,
-} from '@/pages/public/MsmePages';
-import {
-  AccessibilityPage,
-  ContactPage,
-  NotFoundPage,
-  PartnersPage,
-  PrivacyPage,
-  SearchPage,
-  TermsPage,
-  UnauthorizedPage,
-} from '@/pages/public/MiscPages';
-import { MembershipApplyPage } from '@/features/membership/ApplicationWizard';
+const PublicLayout = lazy(() => import('@/components/layout/PublicLayout'));
+const Index = lazy(() => import('./pages/Index'));
+const MembershipApplyPage = lazyNamed(
+  () => import('@/features/membership/ApplicationWizard'),
+  'MembershipApplyPage',
+);
 
-import {
-  ForgotPasswordPage,
-  LoginPage,
-  RegisterPage,
-  ResetPasswordPage,
-  VerifyEmailPage,
-} from '@/pages/auth/AuthPages';
+const loadAboutPages = () => import('@/pages/public/AboutPages');
+const AboutPage = lazyNamed(loadAboutPages, 'AboutPage');
+const CorporateProfilePage = lazyNamed(loadAboutPages, 'CorporateProfilePage');
+const HistoryPage = lazyNamed(loadAboutPages, 'HistoryPage');
+const LeadershipPage = lazyNamed(loadAboutPages, 'LeadershipPage');
+const MissionVisionPage = lazyNamed(loadAboutPages, 'MissionVisionPage');
 
-import PortalLayout from '@/pages/portal/PortalLayout';
-import PortalApplication from '@/pages/portal/PortalApplication';
-import {
-  PortalDashboard,
-  PortalDocuments,
-  PortalEvents,
-  PortalMembership,
-  PortalNotices,
-  PortalOrganization,
-  PortalPayments,
-  PortalProfile,
-  PortalSecurity,
-} from '@/pages/portal/PortalPages';
+const loadCouncilPages = () => import('@/pages/public/CouncilPages');
+const CouncilDetailPage = lazyNamed(loadCouncilPages, 'CouncilDetailPage');
+const CouncilsPage = lazyNamed(loadCouncilPages, 'CouncilsPage');
 
-import AdminLayout from '@/pages/admin/AdminLayout';
-import AdminDashboard from '@/pages/admin/AdminDashboard';
-import {
-  AdminApplicationDetailPage,
-  AdminApplicationsPage,
-} from '@/pages/admin/AdminApplications';
-import {
-  AdminAuditPage,
-  AdminCouncilsPage,
-  AdminEventsPage,
-  AdminInquiriesPage,
-  AdminMediaPage,
-  AdminMemberDetailPage,
-  AdminMembersPage,
-  AdminMsmePage,
-  AdminNewsPage,
-  AdminNewsletterPage,
-  AdminNoticesPage,
-  AdminOrganizationsPage,
-  AdminPartnersPage,
-  AdminPaymentsPage,
-  AdminPoliciesPage,
-  AdminPolicySubmissionsPage,
-  AdminPublicationsPage,
-  AdminRegistrationsPage,
-  AdminSettingsPage,
-  AdminUsersPage,
-} from '@/pages/admin/AdminPages';
+const loadPolicyPages = () => import('@/pages/public/PolicyPages');
+const EconomicResearchPage = lazyNamed(loadPolicyPages, 'EconomicResearchPage');
+const InternationalTradePage = lazyNamed(loadPolicyPages, 'InternationalTradePage');
+const LegislativeAffairsPage = lazyNamed(loadPolicyPages, 'LegislativeAffairsPage');
+const PolicyDetailPage = lazyNamed(loadPolicyPages, 'PolicyDetailPage');
+const PolicyPage = lazyNamed(loadPolicyPages, 'PolicyPage');
+const PolicyPositionsPage = lazyNamed(loadPolicyPages, 'PolicyPositionsPage');
+const PolicySubmissionDetailPage = lazyNamed(loadPolicyPages, 'PolicySubmissionDetailPage');
+const PolicySubmissionsPage = lazyNamed(loadPolicyPages, 'PolicySubmissionsPage');
+const RegulatoryAffairsPage = lazyNamed(loadPolicyPages, 'RegulatoryAffairsPage');
+
+const loadMembershipPages = () => import('@/pages/public/MembershipPages');
+const MembershipBenefitsPage = lazyNamed(loadMembershipPages, 'MembershipBenefitsPage');
+const MembershipPage = lazyNamed(loadMembershipPages, 'MembershipPage');
+const MembershipRenewalPage = lazyNamed(loadMembershipPages, 'MembershipRenewalPage');
+const MembershipTiersPage = lazyNamed(loadMembershipPages, 'MembershipTiersPage');
+
+const loadDirectoryPages = () => import('@/pages/public/DirectoryPages');
+const MemberDetailPage = lazyNamed(loadDirectoryPages, 'MemberDetailPage');
+const MemberDirectoryPage = lazyNamed(loadDirectoryPages, 'MemberDirectoryPage');
+
+const loadEventPages = () => import('@/pages/public/EventsPages');
+const EventDetailPage = lazyNamed(loadEventPages, 'EventDetailPage');
+const EventsCalendarPage = lazyNamed(loadEventPages, 'EventsCalendarPage');
+const EventsPage = lazyNamed(loadEventPages, 'EventsPage');
+
+const loadNewsPages = () => import('@/pages/public/NewsPages');
+const NewsDetailPage = lazyNamed(loadNewsPages, 'NewsDetailPage');
+const NewsPage = lazyNamed(loadNewsPages, 'NewsPage');
+
+const loadPublicationPages = () => import('@/pages/public/PublicationPages');
+const AnnualReportsPage = lazyNamed(loadPublicationPages, 'AnnualReportsPage');
+const PublicationDetailPage = lazyNamed(loadPublicationPages, 'PublicationDetailPage');
+const PublicationsPage = lazyNamed(loadPublicationPages, 'PublicationsPage');
+
+const loadMsmePages = () => import('@/pages/public/MsmePages');
+const MsmeDirectoryPage = lazyNamed(loadMsmePages, 'MsmeDirectoryPage');
+const MsmeEventsPage = lazyNamed(loadMsmePages, 'MsmeEventsPage');
+const MsmePage = lazyNamed(loadMsmePages, 'MsmePage');
+const MsmeProgramsPage = lazyNamed(loadMsmePages, 'MsmeProgramsPage');
+
+const loadMiscPages = () => import('@/pages/public/MiscPages');
+const AccessibilityPage = lazyNamed(loadMiscPages, 'AccessibilityPage');
+const ContactPage = lazyNamed(loadMiscPages, 'ContactPage');
+const NotFoundPage = lazyNamed(loadMiscPages, 'NotFoundPage');
+const PartnersPage = lazyNamed(loadMiscPages, 'PartnersPage');
+const PrivacyPage = lazyNamed(loadMiscPages, 'PrivacyPage');
+const SearchPage = lazyNamed(loadMiscPages, 'SearchPage');
+const TermsPage = lazyNamed(loadMiscPages, 'TermsPage');
+const UnauthorizedPage = lazyNamed(loadMiscPages, 'UnauthorizedPage');
+
+const loadAuthPages = () => import('@/pages/auth/AuthPages');
+const ForgotPasswordPage = lazyNamed(loadAuthPages, 'ForgotPasswordPage');
+const LoginPage = lazyNamed(loadAuthPages, 'LoginPage');
+const RegisterPage = lazyNamed(loadAuthPages, 'RegisterPage');
+const ResetPasswordPage = lazyNamed(loadAuthPages, 'ResetPasswordPage');
+const VerifyEmailPage = lazyNamed(loadAuthPages, 'VerifyEmailPage');
+
+const PortalLayout = lazy(() => import('@/pages/portal/PortalLayout'));
+const PortalApplication = lazy(() => import('@/pages/portal/PortalApplication'));
+const loadPortalPages = () => import('@/pages/portal/PortalPages');
+const PortalDashboard = lazyNamed(loadPortalPages, 'PortalDashboard');
+const PortalDocuments = lazyNamed(loadPortalPages, 'PortalDocuments');
+const PortalEvents = lazyNamed(loadPortalPages, 'PortalEvents');
+const PortalMembership = lazyNamed(loadPortalPages, 'PortalMembership');
+const PortalNotices = lazyNamed(loadPortalPages, 'PortalNotices');
+const PortalOrganization = lazyNamed(loadPortalPages, 'PortalOrganization');
+const PortalPayments = lazyNamed(loadPortalPages, 'PortalPayments');
+const PortalProfile = lazyNamed(loadPortalPages, 'PortalProfile');
+const PortalSecurity = lazyNamed(loadPortalPages, 'PortalSecurity');
+
+const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
+const loadAdminApplications = () => import('@/pages/admin/AdminApplications');
+const AdminApplicationDetailPage = lazyNamed(loadAdminApplications, 'AdminApplicationDetailPage');
+const AdminApplicationsPage = lazyNamed(loadAdminApplications, 'AdminApplicationsPage');
+
+const loadAdminPages = () => import('@/pages/admin/AdminPages');
+const AdminAuditPage = lazyNamed(loadAdminPages, 'AdminAuditPage');
+const AdminCouncilsPage = lazyNamed(loadAdminPages, 'AdminCouncilsPage');
+const AdminEventsPage = lazyNamed(loadAdminPages, 'AdminEventsPage');
+const AdminInquiriesPage = lazyNamed(loadAdminPages, 'AdminInquiriesPage');
+const AdminMediaPage = lazyNamed(loadAdminPages, 'AdminMediaPage');
+const AdminMemberDetailPage = lazyNamed(loadAdminPages, 'AdminMemberDetailPage');
+const AdminMembersPage = lazyNamed(loadAdminPages, 'AdminMembersPage');
+const AdminMsmePage = lazyNamed(loadAdminPages, 'AdminMsmePage');
+const AdminNewsPage = lazyNamed(loadAdminPages, 'AdminNewsPage');
+const AdminNewsletterPage = lazyNamed(loadAdminPages, 'AdminNewsletterPage');
+const AdminNoticesPage = lazyNamed(loadAdminPages, 'AdminNoticesPage');
+const AdminOrganizationsPage = lazyNamed(loadAdminPages, 'AdminOrganizationsPage');
+const AdminPartnersPage = lazyNamed(loadAdminPages, 'AdminPartnersPage');
+const AdminPaymentsPage = lazyNamed(loadAdminPages, 'AdminPaymentsPage');
+const AdminPoliciesPage = lazyNamed(loadAdminPages, 'AdminPoliciesPage');
+const AdminPolicySubmissionsPage = lazyNamed(loadAdminPages, 'AdminPolicySubmissionsPage');
+const AdminPublicationsPage = lazyNamed(loadAdminPages, 'AdminPublicationsPage');
+const AdminRegistrationsPage = lazyNamed(loadAdminPages, 'AdminRegistrationsPage');
+const AdminSettingsPage = lazyNamed(loadAdminPages, 'AdminSettingsPage');
+const AdminUsersPage = lazyNamed(loadAdminPages, 'AdminUsersPage');
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 30_000 } },
@@ -123,7 +142,8 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
+            <Suspense fallback={<AuthLoading />}>
+              <Routes>
               {/* PUBLIC */}
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Index />} />
@@ -344,7 +364,8 @@ const App = () => (
                 />
                 <Route path="*" element={<Navigate to="/admin" replace />} />
               </Route>
-            </Routes>
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
