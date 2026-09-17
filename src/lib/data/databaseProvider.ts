@@ -66,6 +66,65 @@ const collectionTable: Record<ContentCollection, string> = {
   notices: TABLES.notices,
 };
 
+const contentColumns: Record<ContentCollection, readonly string[]> = {
+  news: [
+    'id', 'category_id', 'title', 'slug', 'excerpt', 'body_markdown', 'cover_image_path',
+    'author_user_id', 'author_display_name', 'status', 'featured', 'published_at',
+    'seo_title', 'seo_description', 'is_demo',
+  ],
+  events: [
+    'id', 'council_id', 'title', 'slug', 'event_type', 'summary', 'description_markdown',
+    'cover_image_path', 'starts_at', 'ends_at', 'venue', 'island', 'atoll', 'online_url',
+    'audience', 'capacity', 'fee', 'currency', 'registration_open',
+    'registration_deadline', 'member_only', 'status', 'featured', 'is_demo',
+  ],
+  publications: [
+    'id', 'title', 'slug', 'publication_type', 'summary', 'description_markdown',
+    'cover_image_path', 'file_path', 'page_count', 'published_at', 'status', 'featured', 'is_demo',
+  ],
+  policy: [
+    'id', 'title', 'slug', 'category', 'reference_number', 'summary', 'body_markdown',
+    'position_status', 'progress_percent', 'supporting_file_path', 'status', 'published_at',
+    'featured', 'is_demo',
+  ],
+  submissions: [
+    'id', 'reference_number', 'title', 'slug', 'submitted_to', 'submission_date',
+    'response_status', 'summary', 'file_path', 'status', 'is_demo',
+  ],
+  msme: [
+    'id', 'title', 'slug', 'program_type', 'provider', 'summary', 'description_markdown',
+    'eligibility', 'deadline', 'application_url', 'status', 'featured', 'is_demo',
+  ],
+  partners: ['id', 'name', 'slug', 'partner_type', 'logo_path', 'website', 'display_order', 'active', 'is_demo'],
+  councils: [
+    'id', 'name', 'slug', 'short_description', 'full_description_markdown', 'icon_name',
+    'hero_image_path', 'chair_name', 'chair_title', 'contact_email', 'member_count_display',
+    'established_year', 'objectives', 'policy_priorities', 'status', 'display_order', 'is_demo',
+  ],
+  notices: ['id', 'title', 'body_markdown', 'audience_type', 'published_at', 'expires_at', 'status'],
+};
+
+/** Convert the shared admin form into columns that actually exist on each table. */
+function contentPayload(collection: ContentCollection, record: Record<string, unknown>): Record<string, unknown> {
+  const normalized = { ...record };
+
+  if (collection === 'councils') normalized.full_description_markdown ??= normalized.body_markdown;
+  if (collection === 'events' || collection === 'publications' || collection === 'msme') {
+    normalized.description_markdown ??= normalized.body_markdown;
+  }
+  if (collection === 'events') normalized.starts_at ??= normalized.published_at ?? new Date().toISOString();
+  if (collection === 'submissions') {
+    normalized.reference_number ??= `SUB-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+  }
+  if (collection === 'partners') normalized.active = normalized.status !== 'archived';
+
+  return Object.fromEntries(
+    contentColumns[collection]
+      .filter((column) => normalized[column] !== undefined)
+      .map((column) => [column, normalized[column]]),
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -838,14 +897,13 @@ export const databaseDataProvider: DataProvider = {
   },
 
   saveContent: async (collection, record, actor) => {
-    if (!supabase) return;
+    if (!supabase) throw new Error('Supabase is not configured.');
     const table = collectionTable[collection];
-    const payload = { ...(record as unknown as Record<string, unknown>) };
-    delete payload.documents;
+    const payload = contentPayload(collection, record as unknown as Record<string, unknown>);
     const { error } = await supabase.from(table).upsert(payload, { onConflict: 'id' });
     if (error) {
       console.error('[databaseProvider]', error.message);
-      return;
+      throw new Error(error.message);
     }
     await writeAudit(actor, `${collection}.saved`, collection, record.id, `Saved ${collection} record`);
   },
@@ -855,7 +913,7 @@ export const databaseDataProvider: DataProvider = {
     const { error } = await supabase.from(collectionTable[collection]).delete().eq('id', id);
     if (error) {
       console.error('[databaseProvider]', error.message);
-      return;
+      throw new Error(error.message);
     }
     await writeAudit(actor, `${collection}.deleted`, collection, id, `Deleted ${collection} record`);
   },

@@ -226,6 +226,11 @@ interface ContentRecord {
   status?: string;
   published_at?: string;
   featured?: boolean;
+  body_markdown?: string;
+  description_markdown?: string;
+  full_description_markdown?: string;
+  seo_title?: string;
+  seo_description?: string;
 }
 
 const ContentManager: React.FC<{
@@ -239,10 +244,11 @@ const ContentManager: React.FC<{
   const queryClient = useQueryClient();
   const { data: items = [] } = useQuery({ queryKey: [queryKey], queryFn: load });
   const [editing, setEditing] = useState<ContentRecord | null>(null);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ title: '', slug: '', status: 'draft', seo_title: '', seo_description: '', body: '', featured: false });
 
   const openNew = () => {
-    setEditing({ id: `${collection}-${Date.now()}` });
+    setEditing({ id: crypto.randomUUID() });
     setForm({ title: '', slug: '', status: 'draft', seo_title: '', seo_description: '', body: '', featured: false });
   };
 
@@ -252,9 +258,9 @@ const ContentManager: React.FC<{
       title: record.title ?? record.name ?? '',
       slug: record.slug ?? '',
       status: record.status ?? 'draft',
-      seo_title: record.title ?? '',
-      seo_description: '',
-      body: '',
+      seo_title: record.seo_title ?? record.title ?? '',
+      seo_description: record.seo_description ?? '',
+      body: record.body_markdown ?? record.description_markdown ?? record.full_description_markdown ?? '',
       featured: Boolean(record.featured),
     });
   };
@@ -266,27 +272,35 @@ const ContentManager: React.FC<{
       return;
     }
     const base = items.find((i) => i.id === editing.id) ?? {};
-    await dataProvider.saveContent(
-      collection,
-      {
-        ...(base as Record<string, unknown>),
-        id: editing.id,
-        title: form.title,
-        name: form.title,
-        slug: form.slug,
-        status: form.status,
-        featured: form.featured,
-        seo_title: form.seo_title,
-        seo_description: form.seo_description,
-        body_markdown: form.body,
-        published_at: (base as ContentRecord).published_at ?? new Date().toISOString(),
-        is_demo: true,
-      } as never,
-      user?.full_name ?? 'Editor',
-    );
-    await queryClient.invalidateQueries({ queryKey: [queryKey] });
-    setEditing(null);
-    toast({ title: 'Content saved', description: `${form.title} has been saved as ${form.status}.` });
+    setSaving(true);
+    try {
+      await dataProvider.saveContent(
+        collection,
+        {
+          ...(base as Record<string, unknown>),
+          id: editing.id,
+          title: form.title,
+          name: form.title,
+          slug: form.slug,
+          status: form.status,
+          featured: form.featured,
+          seo_title: form.seo_title,
+          seo_description: form.seo_description,
+          body_markdown: form.body,
+          published_at: (base as ContentRecord).published_at ?? new Date().toISOString(),
+          is_demo: false,
+        } as never,
+        user?.full_name ?? 'Editor',
+      );
+      await queryClient.refetchQueries({ queryKey: [queryKey], exact: true });
+      setEditing(null);
+      toast({ title: 'Content saved', description: `${form.title} has been saved as ${form.status}.` });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'The record could not be saved.';
+      toast({ title: 'Could not save content', description: message, variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const remove = async (record: ContentRecord) => {
@@ -376,8 +390,8 @@ const ContentManager: React.FC<{
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
-              <Button type="button" onClick={save}>Save record</Button>
+              <Button type="button" variant="outline" onClick={() => setEditing(null)} disabled={saving}>Cancel</Button>
+              <Button type="button" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save record'}</Button>
             </div>
           </Card>
         </div>
