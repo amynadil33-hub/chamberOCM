@@ -313,6 +313,9 @@ const mapEvent = (r: Row): McciEvent => ({
   status: str(r.status, 'published') as McciEvent['status'],
   featured: bool(r.featured),
   is_demo: bool(r.is_demo),
+  partner_organization: str(r.partner_organization) || undefined,
+  delivery_mode: (str(r.delivery_mode) || undefined) as McciEvent['delivery_mode'],
+  programme_reference: str(r.programme_reference) || undefined,
 });
 
 const mapRegistration = (r: Row): EventRegistration => ({
@@ -327,6 +330,16 @@ const mapRegistration = (r: Row): EventRegistration => ({
   registration_status: str(r.registration_status, 'pending') as EventRegistration['registration_status'],
   payment_status: str(r.payment_status, 'pending') as EventRegistration['payment_status'],
   registered_at: str(r.registered_at),
+  application_reference: str(r.application_reference) || undefined,
+  applicant_island: str(r.applicant_island) || undefined,
+  applicant_organization: str(r.applicant_organization) || undefined,
+  employment_status: str(r.employment_status) || undefined,
+  experience_level: str(r.experience_level) || undefined,
+  motivation: str(r.motivation) || undefined,
+  accessibility_requirements: str(r.accessibility_requirements) || undefined,
+  privacy_accepted: bool(r.privacy_accepted),
+  review_note: str(r.review_note) || undefined,
+  updated_at: str(r.updated_at) || undefined,
 });
 
 const mapPublication = (r: Row): Publication => ({
@@ -822,7 +835,9 @@ export const databaseDataProvider: DataProvider = {
     const record: EventRegistration = {
       ...input,
       id: `reg-${Date.now()}`,
+      application_reference: input.application_reference ?? `MCCI-TRN-APP-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
       registered_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     if (!supabase) return record;
     const { error } = await supabase.from(TABLES.registrations).insert({
@@ -832,6 +847,23 @@ export const databaseDataProvider: DataProvider = {
     });
     if (error) console.error('[databaseProvider]', error.message);
     return record;
+  },
+
+  updateRegistrationStatus: async (id, status, note, actor) => {
+    if (!supabase) return undefined;
+    const updatedAt = new Date().toISOString();
+    const { data, error } = await supabase
+      .from(TABLES.registrations)
+      .update({ registration_status: status, review_note: note || null, updated_at: updatedAt })
+      .eq('id', id)
+      .select('*')
+      .maybeSingle();
+    if (error || !data) {
+      if (error) console.error('[databaseProvider]', error.message);
+      return undefined;
+    }
+    await writeAudit(actor, `training_application.${status}`, 'event_registration', id, `Training application marked ${status}`);
+    return mapRegistration(data as Row);
   },
 
   notices: () =>

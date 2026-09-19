@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { addMonths, endOfMonth, format, isSameDay, parseISO, startOfMonth } from 'date-fns';
-import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import {
   Badge,
   Button,
@@ -130,6 +130,11 @@ export const EventsPage: React.FC = () => {
                   </Link>
                 </h2>
                 <p className="mt-2 line-clamp-3 flex-1 text-[13.5px] leading-relaxed text-ink-soft">{event.summary}</p>
+                {event.partner_organization && (
+                  <p className="mt-3 rounded-md bg-brand-light px-3 py-2 text-[12.5px] font-medium text-brand-deep">
+                    In partnership with {event.partner_organization}
+                  </p>
+                )}
                 <dl className="mt-4 space-y-1.5 border-t border-surface-border pt-4 text-[12.5px] text-ink-soft">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-3.5 w-3.5 text-ink-muted" aria-hidden="true" />
@@ -255,10 +260,14 @@ export const EventDetailPage: React.FC = () => {
   const { data: event } = useQuery({ queryKey: ['event', slug], queryFn: () => dataProvider.event(slug) });
   usePageMeta(event?.title ?? 'Event', event?.summary);
 
-  const [form, setForm] = useState({ name: '', email: '', phone: '', designation: '' });
+  const [form, setForm] = useState({
+    name: '', email: '', phone: '', designation: '', island: '', organization: '',
+    employment_status: '', experience_level: '', motivation: '', accessibility: '', privacy: false,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [applicationReference, setApplicationReference] = useState('');
 
   if (!event) {
     return (
@@ -274,11 +283,18 @@ export const EventDetailPage: React.FC = () => {
     if (!form.name.trim()) next.name = 'Enter the attendee name.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Enter a valid email address.';
     if (!form.phone.trim()) next.phone = 'Enter a contact number.';
+    if (event.event_type === 'training') {
+      if (!form.island.trim()) next.island = 'Enter your island.';
+      if (!form.employment_status) next.employment_status = 'Select your current employment status.';
+      if (!form.experience_level) next.experience_level = 'Select your experience level.';
+      if (form.motivation.trim().length < 20) next.motivation = 'Tell us briefly why you want to join (at least 20 characters).';
+      if (!form.privacy) next.privacy = 'You must agree before submitting the application.';
+    }
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
     setSubmitting(true);
-    await dataProvider.registerForEvent({
+    const record = await dataProvider.registerForEvent({
       event_id: event.id,
       user_id: user?.id,
       organization_id: user?.organization_id,
@@ -288,9 +304,17 @@ export const EventDetailPage: React.FC = () => {
       designation: form.designation,
       registration_status: 'pending',
       payment_status: event.fee > 0 ? 'pending' : 'verified',
+      applicant_island: form.island,
+      applicant_organization: form.organization,
+      employment_status: form.employment_status,
+      experience_level: form.experience_level,
+      motivation: form.motivation,
+      accessibility_requirements: form.accessibility,
+      privacy_accepted: form.privacy,
     });
     setSubmitting(false);
     setDone(true);
+    setApplicationReference(record.application_reference ?? record.id);
     toast({
       title: 'Registration received',
       description: `Your registration for ${event.title} has been recorded. A confirmation email would be sent in production.`,
@@ -310,6 +334,31 @@ export const EventDetailPage: React.FC = () => {
       <Container className="py-14">
         <div className="grid gap-8 lg:grid-cols-12">
           <div className="lg:col-span-8">
+            {event.event_type === 'training' && (
+              <Card className="mb-8 overflow-hidden border-brand/20">
+                <div className="bg-brand-deep px-6 py-5 text-white">
+                  <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Public training programme</p>
+                  <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 className="text-xl font-semibold">Delivered with {event.partner_organization ?? 'an MCCI member organisation'}</h2>
+                    <Badge status="active" label={event.delivery_mode === 'physical' ? 'Physical classes' : event.delivery_mode} className="border-white/20 bg-white/10 text-white" />
+                  </div>
+                </div>
+                <div className="grid gap-0 sm:grid-cols-4">
+                  {[
+                    ['1', 'Apply online', 'Complete the public application form.'],
+                    ['2', 'Eligibility check', 'The chamber reviews every application.'],
+                    ['3', 'Seat confirmation', 'The training partner confirms selected participants.'],
+                    ['4', 'Attend classes', 'Approved applicants receive class instructions.'],
+                  ].map(([number, title, copy]) => (
+                    <div key={number} className="border-b border-surface-border p-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+                      <span className="font-mono text-[12px] font-semibold text-brand">STEP {number}</span>
+                      <p className="mt-2 text-[14px] font-semibold text-ink">{title}</p>
+                      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{copy}</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
             <Markdown content={event.description_markdown} />
             <DemoNotice className="mt-8" />
           </div>
@@ -322,6 +371,8 @@ export const EventDetailPage: React.FC = () => {
                   ['Ends', formatDateTime(event.ends_at)],
                   ['Venue', event.venue],
                   ['Audience', event.audience],
+                  ...(event.partner_organization ? [['Training partner', event.partner_organization]] : []),
+                  ...(event.programme_reference ? [['Programme reference', event.programme_reference]] : []),
                   ['Capacity', `${event.registered_count} of ${event.capacity} registered`],
                   ['Fee', event.fee > 0 ? formatCurrency(event.fee, event.currency) : 'No fee'],
                   ['Registration closes', formatDate(event.registration_deadline)],
@@ -339,14 +390,17 @@ export const EventDetailPage: React.FC = () => {
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-[15px] font-semibold text-ink">Register</h2>
+              <h2 className="text-[15px] font-semibold text-ink">{event.event_type === 'training' ? 'Apply for this programme' : 'Register'}</h2>
               {!canRegister ? (
                 <p className="mt-2 text-[13.5px] text-ink-soft">
                   Registration is closed for this event. Browse other upcoming sessions in the events calendar.
                 </p>
               ) : done ? (
                 <div className="mt-3 rounded-md border border-chamber-green/30 bg-chamber-green-light p-4 text-[13.5px] text-chamber-green-dark">
-                  Registration recorded. You can review it in the member portal under Events.
+                  <CheckCircle2 className="mb-2 h-5 w-5" aria-hidden="true" />
+                  <strong className="block">Application received</strong>
+                  <span className="mt-1 block">Reference <span className="font-mono font-semibold">{applicationReference}</span></span>
+                  <span className="mt-2 block">The chamber will review your application. If selected, you will receive seat confirmation and payment instructions by email.</span>
                 </div>
               ) : (
                 <form onSubmit={handleRegister} className="mt-3 space-y-3" noValidate>
@@ -400,8 +454,59 @@ export const EventDetailPage: React.FC = () => {
                       onChange={(e) => setForm({ ...form, designation: e.target.value })}
                     />
                   </div>
+                  {event.event_type === 'training' && (
+                    <>
+                      <div>
+                        <FieldLabel htmlFor="reg-island" required>Island</FieldLabel>
+                        <input id="reg-island" className={inputClass} value={form.island} onChange={(e) => setForm({ ...form, island: e.target.value })} aria-invalid={Boolean(errors.island)} />
+                        <FieldError message={errors.island} />
+                      </div>
+                      <div>
+                        <FieldLabel htmlFor="reg-organization">Organisation / school</FieldLabel>
+                        <input id="reg-organization" className={inputClass} value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} placeholder="Optional" />
+                      </div>
+                      <div>
+                        <FieldLabel htmlFor="reg-employment" required>Current status</FieldLabel>
+                        <select id="reg-employment" className={inputClass} value={form.employment_status} onChange={(e) => setForm({ ...form, employment_status: e.target.value })}>
+                          <option value="">Select one</option>
+                          <option value="Employed">Employed</option>
+                          <option value="Self-employed">Self-employed</option>
+                          <option value="Student">Student</option>
+                          <option value="Seeking work">Seeking work</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <FieldError message={errors.employment_status} />
+                      </div>
+                      <div>
+                        <FieldLabel htmlFor="reg-experience" required>Digital marketing experience</FieldLabel>
+                        <select id="reg-experience" className={inputClass} value={form.experience_level} onChange={(e) => setForm({ ...form, experience_level: e.target.value })}>
+                          <option value="">Select one</option>
+                          <option value="None">No previous experience</option>
+                          <option value="Beginner">Beginner</option>
+                          <option value="Intermediate">Intermediate</option>
+                        </select>
+                        <FieldError message={errors.experience_level} />
+                      </div>
+                      <div>
+                        <FieldLabel htmlFor="reg-motivation" required>Why do you want to join?</FieldLabel>
+                        <textarea id="reg-motivation" rows={4} className={inputClass} value={form.motivation} onChange={(e) => setForm({ ...form, motivation: e.target.value })} aria-invalid={Boolean(errors.motivation)} />
+                        <FieldError message={errors.motivation} />
+                      </div>
+                      <div>
+                        <FieldLabel htmlFor="reg-accessibility">Accessibility or learning support</FieldLabel>
+                        <textarea id="reg-accessibility" rows={2} className={inputClass} value={form.accessibility} onChange={(e) => setForm({ ...form, accessibility: e.target.value })} placeholder="Optional" />
+                      </div>
+                      <div>
+                        <label className="flex items-start gap-2.5 text-[13px] leading-relaxed text-ink-soft">
+                          <input type="checkbox" checked={form.privacy} onChange={(e) => setForm({ ...form, privacy: e.target.checked })} className="mt-0.5 h-4 w-4 rounded border-surface-border text-brand focus:ring-brand" />
+                          I confirm the information is accurate and agree to the chamber processing it for this training application.
+                        </label>
+                        <FieldError message={errors.privacy} />
+                      </div>
+                    </>
+                  )}
                   <Button type="submit" loading={submitting} className="w-full">
-                    Submit registration
+                    {event.event_type === 'training' ? 'Submit application' : 'Submit registration'}
                   </Button>
                 </form>
               )}

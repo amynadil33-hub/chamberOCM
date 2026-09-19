@@ -110,7 +110,7 @@ export const adminNav: AdminNavItem[] = [
   { label: 'Councils', to: '/admin/councils', icon: 'Network', roles: ['editor', 'admin', 'super_admin'], group: 'Content' },
   { label: 'News', to: '/admin/news', icon: 'Newspaper', roles: ['editor', 'admin', 'super_admin'], group: 'Content' },
   { label: 'Events', to: '/admin/events', icon: 'CalendarDays', roles: ['editor', 'admin', 'super_admin'], group: 'Content' },
-  { label: 'Registrations', to: '/admin/event-registrations', icon: 'ListChecks', roles: ['admin', 'super_admin'], group: 'Content' },
+  { label: 'Applications & registrations', to: '/admin/event-registrations', icon: 'ListChecks', roles: ['admin', 'super_admin'], group: 'Content' },
   { label: 'Publications', to: '/admin/publications', icon: 'BookOpen', roles: ['editor', 'admin', 'super_admin'], group: 'Content' },
   { label: 'Policy items', to: '/admin/policies', icon: 'Scale', roles: ['editor', 'admin', 'super_admin'], group: 'Content' },
   { label: 'Policy submissions', to: '/admin/policy-submissions', icon: 'FileSignature', roles: ['editor', 'admin', 'super_admin'], group: 'Content' },

@@ -432,13 +432,33 @@ export const AdminNoticesPage: React.FC = () => (
 /* ------------------------------ OPERATIONS -------------------------------- */
 
 export const AdminRegistrationsPage: React.FC = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: registrations = [] } = useQuery({ queryKey: ['registrations'], queryFn: () => dataProvider.registrations() });
   const { data: events = [] } = useQuery({ queryKey: ['events'], queryFn: () => dataProvider.events() });
+  const [programmeFilter, setProgrammeFilter] = useState('all');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [reviewNote, setReviewNote] = useState('');
+
+  const trainingEventIds = new Set(events.filter((event) => event.event_type === 'training').map((event) => event.id));
+  const visibleRegistrations = programmeFilter === 'training'
+    ? registrations.filter((registration) => trainingEventIds.has(registration.event_id))
+    : registrations;
+  const selected = registrations.find((registration) => registration.id === selectedId);
+
+  const updateStatus = async (status: 'confirmed' | 'waitlisted' | 'rejected') => {
+    if (!selected) return;
+    await dataProvider.updateRegistrationStatus(selected.id, status, reviewNote, user?.full_name ?? 'Administrator');
+    await queryClient.invalidateQueries({ queryKey: ['registrations'] });
+    toast({ title: `Application ${titleCase(status)}`, description: 'The applicant record has been updated in the admin portal.' });
+    setReviewNote('');
+  };
 
   const exportCsv = () => {
     const rows = [
-      ['Attendee', 'Email', 'Phone', 'Designation', 'Event', 'Registered', 'Status', 'Payment'],
-      ...registrations.map((r) => [
+      ['Application reference', 'Attendee', 'Email', 'Phone', 'Designation', 'Event', 'Registered', 'Status', 'Payment'],
+      ...visibleRegistrations.map((r) => [
+        r.application_reference ?? r.id,
         r.attendee_name,
         r.attendee_email,
         r.attendee_phone,
@@ -463,8 +483,8 @@ export const AdminRegistrationsPage: React.FC = () => {
   return (
     <>
       <AdminHeading
-        title="Event registrations"
-        description="Attendee records across all chamber events."
+        title="Event & training applications"
+        description="Review public training applications and attendee records across all chamber programmes."
         action={
           <Button type="button" variant="outline" onClick={exportCsv}>
             <Download className="h-4 w-4" aria-hidden="true" />
@@ -472,18 +492,77 @@ export const AdminRegistrationsPage: React.FC = () => {
           </Button>
         }
       />
-      <TableShell headers={['Attendee', 'Email', 'Event', 'Registered', 'Status', 'Payment']}>
-        {registrations.map((registration) => (
+      <Card className="mb-5 p-4">
+        <FieldLabel htmlFor="registration-type">Record type</FieldLabel>
+        <select id="registration-type" className={`${inputClass} max-w-xs`} value={programmeFilter} onChange={(e) => setProgrammeFilter(e.target.value)}>
+          <option value="all">All event records</option>
+          <option value="training">Training applications</option>
+        </select>
+      </Card>
+      <TableShell headers={['Reference', 'Applicant', 'Programme', 'Registered', 'Status', 'Payment', 'Action']} minWidth="980px">
+        {visibleRegistrations.map((registration) => (
           <tr key={registration.id} className="hover:bg-surface-page">
+            <td className="px-5 py-3.5 font-mono text-[11px] text-brand-deep">{registration.application_reference ?? 'Event registration'}</td>
             <td className="px-5 py-3.5 font-medium text-ink">{registration.attendee_name}</td>
-            <td className="px-5 py-3.5 text-ink-soft">{registration.attendee_email}</td>
             <td className="px-5 py-3.5 text-ink-soft">{events.find((e) => e.id === registration.event_id)?.title}</td>
             <td className="px-5 py-3.5 font-mono text-[12px] text-ink-soft">{formatDate(registration.registered_at)}</td>
             <td className="px-5 py-3.5"><Badge status={registration.registration_status} /></td>
             <td className="px-5 py-3.5"><Badge status={registration.payment_status} /></td>
+            <td className="px-5 py-3.5">
+              <Button type="button" variant="outline" onClick={() => setSelectedId(registration.id)}>Review</Button>
+            </td>
           </tr>
         ))}
       </TableShell>
+      {selected && (
+        <Card className="mt-6 p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-wider text-brand">{selected.application_reference ?? selected.id}</p>
+              <h2 className="mt-1 text-[19px] font-semibold text-ink">{selected.attendee_name}</h2>
+              <p className="mt-1 text-[13px] text-ink-soft">{selected.attendee_email} · {selected.attendee_phone}</p>
+            </div>
+            <Badge status={selected.registration_status} />
+          </div>
+          <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ['Programme', events.find((event) => event.id === selected.event_id)?.title ?? '—'],
+              ['Island', selected.applicant_island || '—'],
+              ['Organisation / school', selected.applicant_organization || '—'],
+              ['Current status', selected.employment_status || '—'],
+              ['Experience level', selected.experience_level || '—'],
+              ['Designation', selected.designation || '—'],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-[11px] uppercase tracking-wider text-ink-muted">{label}</dt>
+                <dd className="mt-1 text-[14px] text-ink">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          {selected.motivation && (
+            <div className="mt-6 rounded-lg bg-surface-page p-4">
+              <p className="text-[11px] uppercase tracking-wider text-ink-muted">Reason for applying</p>
+              <p className="mt-2 text-[14px] leading-relaxed text-ink">{selected.motivation}</p>
+            </div>
+          )}
+          {selected.accessibility_requirements && (
+            <div className="mt-4 rounded-lg border border-surface-border p-4">
+              <p className="text-[11px] uppercase tracking-wider text-ink-muted">Accessibility or learning support</p>
+              <p className="mt-2 text-[14px] text-ink">{selected.accessibility_requirements}</p>
+            </div>
+          )}
+          <div className="mt-6">
+            <FieldLabel htmlFor="training-review-note">Review note</FieldLabel>
+            <textarea id="training-review-note" rows={3} className={inputClass} value={reviewNote} onChange={(e) => setReviewNote(e.target.value)} placeholder="Optional note for the application record" />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button type="button" variant="secondary" onClick={() => updateStatus('confirmed')}>Confirm seat</Button>
+            <Button type="button" variant="outline" onClick={() => updateStatus('waitlisted')}>Add to waitlist</Button>
+            <Button type="button" variant="danger" onClick={() => updateStatus('rejected')}>Decline</Button>
+            <Button type="button" variant="ghost" onClick={() => setSelectedId(null)}>Close</Button>
+          </div>
+        </Card>
+      )}
     </>
   );
 };

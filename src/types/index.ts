@@ -32,6 +32,7 @@ export type RegistrationStatus =
   | 'pending'
   | 'confirmed'
   | 'waitlisted'
+  | 'rejected'
   | 'cancelled'
   | 'attended'
   | 'no_show';
@@ -245,6 +246,9 @@ export interface McciEvent {
   status: ContentStatus;
   featured: boolean;
   is_demo: boolean;
+  partner_organization?: string;
+  delivery_mode?: 'physical' | 'online' | 'hybrid';
+  programme_reference?: string;
 }
 
 export interface EventRegistration {
@@ -259,6 +263,16 @@ export interface EventRegistration {
   registration_status: RegistrationStatus;
   payment_status: PaymentStatus;
   registered_at: string;
+  application_reference?: string;
+  applicant_island?: string;
+  applicant_organization?: string;
+  employment_status?: string;
+  experience_level?: string;
+  motivation?: string;
+  accessibility_requirements?: string;
+  privacy_accepted?: boolean;
+  review_note?: string;
+  updated_at?: string;
 }
 
 export interface Publication {

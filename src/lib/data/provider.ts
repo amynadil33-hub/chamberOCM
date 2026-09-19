@@ -168,6 +168,7 @@ export interface DataProvider {
   invoices(organizationId?: string): Promise<Invoice[]>;
   registrations(userId?: string): Promise<EventRegistration[]>;
   registerForEvent(input: Omit<EventRegistration, 'id' | 'registered_at'>): Promise<EventRegistration>;
+  updateRegistrationStatus(id: string, status: EventRegistration['registration_status'], note: string, actor: string): Promise<EventRegistration | undefined>;
   notices(): Promise<MemberNotice[]>;
   inquiries(): Promise<ContactInquiry[]>;
   createInquiry(input: Omit<ContactInquiry, 'id' | 'created_at' | 'status'>): Promise<ContactInquiry>;
@@ -369,11 +370,26 @@ const mockProvider: DataProvider = {
     const record: EventRegistration = {
       ...input,
       id: `reg-${Date.now()}`,
+      application_reference: input.application_reference ?? `MCCI-TRN-APP-${new Date().getFullYear()}-${(store.registrations.length + 1).toString().padStart(4, '0')}`,
       registered_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     store.registrations = [record, ...store.registrations];
     persist();
     return delay(record);
+  },
+  updateRegistrationStatus: (id, status, note, actor) => {
+    const index = store.registrations.findIndex((registration) => registration.id === id);
+    if (index === -1) return delay(undefined);
+    store.registrations[index] = {
+      ...store.registrations[index],
+      registration_status: status,
+      review_note: note,
+      updated_at: new Date().toISOString(),
+    };
+    persist();
+    logAudit(actor, `training_application.${status}`, 'event_registration', id, `Training application ${store.registrations[index].application_reference ?? id} marked ${status}`);
+    return delay(store.registrations[index]);
   },
   notices: () => delay(store.notices),
   inquiries: () => delay(store.inquiries),

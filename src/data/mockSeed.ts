@@ -521,7 +521,7 @@ const eventSeed: Array<[string, McciEvent['event_type'], string, string, boolean
   ['MCCI Annual General Meeting', 'meeting', '2025-11-28T15:00:00Z', 'Malé', true, 0, undefined as unknown as string],
 ];
 
-export const events: McciEvent[] = eventSeed.map(
+const standardEvents: McciEvent[] = eventSeed.map(
   ([title, type, starts, island, memberOnly, fee, councilId], index) => {
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const start = new Date(starts);
@@ -553,6 +553,37 @@ export const events: McciEvent[] = eventSeed.map(
     };
   },
 );
+
+export const events: McciEvent[] = [
+  {
+    id: 'event-training-public-1',
+    title: 'Practical Digital Marketing for Small Businesses',
+    slug: 'practical-digital-marketing-small-businesses',
+    event_type: 'training',
+    summary: 'A three-day, in-person public training programme delivered by MCCI in partnership with member organisation Atoll Digital Solutions.',
+    description_markdown: `## About the programme\n\nA practical three-day classroom programme for business owners, employees, freelancers and members of the public who want to plan and run effective digital campaigns.\n\n### What participants will learn\n\n- Build a simple digital marketing plan\n- Create useful social media content\n- Set up and measure a small advertising campaign\n- Read basic performance reports\n\n### Class schedule\n\n- **Day 1:** Strategy, audiences and channels\n- **Day 2:** Content planning and practical exercises\n- **Day 3:** Campaign setup, measurement and participant presentations\n\n### Delivery partnership\n\nThe chamber coordinates public access and programme quality. Atoll Digital Solutions, an MCCI member organisation, provides the trainer and practical lab support.\n\n*Demonstration programme — dates, trainer and venue must be confirmed before public launch.*`,
+    starts_at: '2026-11-15T09:00:00+05:00',
+    ends_at: '2026-11-17T16:00:00+05:00',
+    venue: 'MCCI Training Hall, Malé (demonstration venue)',
+    island: 'Malé',
+    atoll: 'Kaafu (Malé)',
+    audience: 'Open to the public — beginners welcome',
+    capacity: 24,
+    registered_count: 9,
+    fee: 750,
+    currency: 'MVR',
+    registration_open: true,
+    registration_deadline: '2026-11-10T23:59:00+05:00',
+    member_only: false,
+    status: 'published',
+    featured: true,
+    is_demo: true,
+    partner_organization: 'Atoll Digital Solutions',
+    delivery_mode: 'physical',
+    programme_reference: 'MCCI-TRN-2026-011',
+  },
+  ...standardEvents,
+];
 
 export const publications: Publication[] = [
   {
@@ -952,6 +983,26 @@ export const invoices: Invoice[] = [
 ];
 
 export const eventRegistrations: EventRegistration[] = [
+  {
+    id: 'reg-training-1',
+    event_id: 'event-training-public-1',
+    attendee_name: 'Demo Public Applicant',
+    attendee_email: 'applicant@demo.test',
+    attendee_phone: '+960 700 0000',
+    designation: 'Small business owner',
+    registration_status: 'pending',
+    payment_status: 'pending',
+    registered_at: '2026-09-18T09:30:00Z',
+    application_reference: 'MCCI-TRN-APP-2026-0001',
+    applicant_island: 'Malé',
+    applicant_organization: 'Island Craft Studio',
+    employment_status: 'Self-employed',
+    experience_level: 'Beginner',
+    motivation: 'I want to improve how I promote my small craft business and understand which campaigns lead to real customer enquiries.',
+    accessibility_requirements: 'Front-row seating preferred.',
+    privacy_accepted: true,
+    updated_at: '2026-09-18T09:30:00Z',
+  },
   {
     id: 'reg-1',
     event_id: 'event-1',
