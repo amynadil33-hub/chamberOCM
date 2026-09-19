@@ -39,9 +39,9 @@ const processSteps = [
   { step: '01', title: 'Choose your tier', text: 'Select the membership category that matches your business size and objectives.' },
   { step: '02', title: 'Complete the application', text: 'Provide business, contact and council preference details online.' },
   { step: '03', title: 'Upload documents', text: 'Attach registration certificate, director list and signatory identification.' },
-  { step: '04', title: 'Review', text: 'The membership team reviews the application and may request further information.' },
-  { step: '05', title: 'Approval & invoice', text: 'On approval a member number is issued along with the subscription invoice.' },
-  { step: '06', title: 'Activation', text: 'Membership becomes active and portal services are unlocked.' },
+  { step: '04', title: 'Chamber review', text: 'The membership team reviews the application and may request further information.' },
+  { step: '05', title: 'Approval & payment', text: 'Once the chamber approves the application, payment is unlocked in the applicant portal.' },
+  { step: '06', title: 'Activation & certificate', text: 'Successful payment activates membership and issues a digital membership certificate.' },
 ];
 
 const faqs = [

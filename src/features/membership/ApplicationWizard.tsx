@@ -184,6 +184,19 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
           <span className="font-mono font-semibold text-brand-deep">{reference}</span>. You can track progress in
           the member portal.
         </p>
+        <div className="mt-6 grid gap-3 text-left sm:grid-cols-3">
+          {[
+            ['1', 'Chamber review', 'The membership team checks your form and documents.'],
+            ['2', 'Payment', 'Payment opens only after the chamber approves your application.'],
+            ['3', 'Certificate', 'Successful payment activates membership and issues your digital certificate.'],
+          ].map(([number, title, copy]) => (
+            <div key={number} className="rounded-lg border border-surface-border bg-surface-page p-4">
+              <span className="font-mono text-[11px] font-semibold text-brand">STEP {number}</span>
+              <p className="mt-1 text-[14px] font-semibold text-ink">{title}</p>
+              <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{copy}</p>
+            </div>
+          ))}
+        </div>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <ButtonLink to="/portal/application">Track application</ButtonLink>
           <ButtonLink to="/" variant="outline">Return home</ButtonLink>

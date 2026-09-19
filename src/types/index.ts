@@ -160,6 +160,12 @@ export interface MembershipApplication {
   timeline: ApplicationTimelineEvent[];
   review_notes?: string;
   rejection_reason?: string;
+  payment_status?: PaymentStatus;
+  payment_reference?: string;
+  paid_at?: string;
+  member_number?: string;
+  certificate_number?: string;
+  certificate_issued_at?: string;
   submitted_at?: string;
   created_at: string;
   updated_at: string;

@@ -144,7 +144,7 @@ export const AdminApplicationDetailPage: React.FC = () => {
       title: `Application ${titleCase(status)}`,
       description:
         status === 'approved'
-          ? 'Membership activated, member number issued and an approval notification queued.'
+          ? 'Payment has been unlocked for the applicant. Membership activates only after payment succeeds.'
           : 'The applicant has been notified in the member portal.',
     });
   };
@@ -247,6 +247,9 @@ export const AdminApplicationDetailPage: React.FC = () => {
         <div className="space-y-5">
           <Card className="p-6">
             <h2 className="text-[15px] font-semibold text-ink">Review actions</h2>
+            <p className="mt-2 rounded-md bg-brand-light p-3 text-[13px] leading-relaxed text-brand-deep">
+              Approval unlocks payment for the applicant. It does not activate membership or issue a certificate.
+            </p>
             <div className="mt-4">
               <FieldLabel htmlFor="review-note">Internal note / reason</FieldLabel>
               <textarea id="review-note" rows={4} className={inputClass} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Required when requesting information or rejecting" />
@@ -259,7 +262,7 @@ export const AdminApplicationDetailPage: React.FC = () => {
                 Request more information
               </Button>
               <Button type="button" variant="secondary" className="w-full" onClick={() => setConfirm('approved')}>
-                Approve application
+                Approve &amp; unlock payment
               </Button>
               <Button type="button" variant="danger" className="w-full" onClick={() => setConfirm('rejected')}>
                 Reject application
@@ -296,7 +299,7 @@ export const AdminApplicationDetailPage: React.FC = () => {
                 </h2>
                 <p className="mt-2 text-[14px] leading-relaxed text-ink-soft">
                   {confirm === 'approved'
-                    ? 'Approving activates the membership, issues a member number and records an audit event.'
+                    ? 'Approval unlocks the membership payment in the applicant portal. Membership and the digital certificate are issued only after payment succeeds.'
                     : 'Rejection requires a reason. The applicant will see the reason in the member portal.'}
                 </p>
               </div>
@@ -309,7 +312,7 @@ export const AdminApplicationDetailPage: React.FC = () => {
                 loading={busy}
                 onClick={() => act(confirm)}
               >
-                {confirm === 'approved' ? 'Confirm approval' : 'Confirm rejection'}
+                {confirm === 'approved' ? 'Approve & unlock payment' : 'Confirm rejection'}
               </Button>
             </div>
           </Card>

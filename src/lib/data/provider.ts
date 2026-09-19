@@ -164,6 +164,7 @@ export interface DataProvider {
   applicationsForUser(userId: string): Promise<MembershipApplication[]>;
   createApplication(input: Partial<MembershipApplication>, user: AuthUser): Promise<MembershipApplication>;
   setApplicationStatus(id: string, status: ApplicationStatus, note: string, actor: string): Promise<MembershipApplication | undefined>;
+  completeMembershipPayment(id: string, paymentReference: string, actor: string): Promise<MembershipApplication | undefined>;
   invoices(organizationId?: string): Promise<Invoice[]>;
   registrations(userId?: string): Promise<EventRegistration[]>;
   registerForEvent(input: Omit<EventRegistration, 'id' | 'registered_at'>): Promise<EventRegistration>;
@@ -264,6 +265,7 @@ const mockProvider: DataProvider = {
       selected_council_ids: input.selected_council_ids ?? [],
       declaration_accepted: true,
       privacy_accepted: true,
+      payment_status: 'pending',
       documents: input.documents ?? [],
       timeline: [
         { id: `t-${Date.now()}`, status: 'draft', note: 'Application created', actor: user.full_name, created_at: now },
@@ -297,7 +299,52 @@ const mockProvider: DataProvider = {
     };
     store.applications[index] = updated;
 
+    if (status === 'approved') {
+      updated.payment_status = 'pending';
+    }
     if (status === 'approved' && updated.organization_id) {
+      const orgIndex = store.organizations.findIndex((o) => o.id === updated.organization_id);
+      if (orgIndex > -1) {
+        store.organizations[orgIndex] = {
+          ...store.organizations[orgIndex],
+          membership_status: 'pending',
+          verification_status: 'pending',
+          tier_id: updated.tier_id,
+          updated_at: now,
+        };
+      }
+    }
+    persist();
+    logAudit(actor, `application.${status}`, 'membership_application', id, `${updated.application_reference} → ${status}`);
+    return delay(updated);
+  },
+  completeMembershipPayment: (id, paymentReference, actor) => {
+    const index = store.applications.findIndex((a) => a.id === id);
+    if (index === -1) return delay(undefined);
+    const app = store.applications[index];
+    if (app.status !== 'approved') return delay(app);
+
+    const now = new Date().toISOString();
+    const serial = (index + 1).toString().padStart(4, '0');
+    const memberNumber = app.member_number ?? `MCCI-${new Date().getFullYear()}-${serial}`;
+    const certificateNumber = app.certificate_number ?? `CERT-${new Date().getFullYear()}-${serial}`;
+    const updated: MembershipApplication = {
+      ...app,
+      payment_status: 'verified',
+      payment_reference: paymentReference,
+      paid_at: now,
+      member_number: memberNumber,
+      certificate_number: certificateNumber,
+      certificate_issued_at: now,
+      updated_at: now,
+      timeline: [
+        ...app.timeline,
+        { id: `t-${Date.now()}`, status: 'approved', note: 'Payment confirmed. Membership activated and digital certificate issued.', actor, created_at: now },
+      ],
+    };
+    store.applications[index] = updated;
+
+    if (updated.organization_id) {
       const orgIndex = store.organizations.findIndex((o) => o.id === updated.organization_id);
       if (orgIndex > -1) {
         store.organizations[orgIndex] = {
@@ -305,15 +352,13 @@ const mockProvider: DataProvider = {
           membership_status: 'active',
           verification_status: 'verified',
           tier_id: updated.tier_id,
-          member_number:
-            store.organizations[orgIndex].member_number ??
-            `MCCI-2026-${(orgIndex + 1).toString().padStart(4, '0')}`,
+          member_number: memberNumber,
           updated_at: now,
         };
       }
     }
     persist();
-    logAudit(actor, `application.${status}`, 'membership_application', id, `${updated.application_reference} → ${status}`);
+    logAudit(actor, 'membership.payment_completed', 'membership_application', id, `${updated.application_reference} payment verified; certificate ${certificateNumber} issued`);
     return delay(updated);
   },
   invoices: (organizationId) =>

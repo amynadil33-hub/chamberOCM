@@ -493,6 +493,12 @@ const mapApplication = (r: Row, documents: MembershipApplication['documents'] = 
   timeline: arr<MembershipApplication['timeline'][number]>(r.timeline),
   review_notes: str(r.review_notes) || undefined,
   rejection_reason: str(r.rejection_reason) || undefined,
+  payment_status: (str(r.payment_status) || undefined) as MembershipApplication['payment_status'],
+  payment_reference: str(r.payment_reference) || undefined,
+  paid_at: str(r.paid_at) || undefined,
+  member_number: str(r.member_number) || undefined,
+  certificate_number: str(r.certificate_number) || undefined,
+  certificate_issued_at: str(r.certificate_issued_at) || undefined,
   submitted_at: str(r.submitted_at) || undefined,
   created_at: str(r.created_at),
   updated_at: str(r.updated_at),
@@ -727,22 +733,62 @@ export const databaseDataProvider: DataProvider = {
       return undefined;
     }
 
-    // Approval activates the membership and issues a member number.
+    // Chamber approval unlocks payment. Membership activation happens only after payment.
     if (status === 'approved' && existing.organization_id) {
-      const memberNumber = `MCCI-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 8999)}`;
       await supabase
         .from(TABLES.organizations)
         .update({
-          membership_status: 'active',
-          verification_status: 'verified',
+          membership_status: 'pending',
+          verification_status: 'pending',
           tier_id: existing.tier_id,
-          member_number: memberNumber,
           updated_at: now,
         })
         .eq('id', existing.organization_id);
+    }
 
+    await writeAudit(actor, `application.${status}`, 'membership_application', id, `${existing.application_reference} → ${status}`);
+    return data ? mapApplication(data as Row, existing.documents) : undefined;
+  },
+
+  completeMembershipPayment: async (id, paymentReference, actor) => {
+    if (!supabase) return undefined;
+    const existing = (await loadApplications({ id }))[0];
+    if (!existing || existing.status !== 'approved') return existing;
+
+    const now = new Date().toISOString();
+    const suffix = Math.floor(1000 + Math.random() * 8999);
+    const memberNumber = existing.member_number ?? `MCCI-${new Date().getFullYear()}-${suffix}`;
+    const certificateNumber = existing.certificate_number ?? `CERT-${new Date().getFullYear()}-${suffix}`;
+    const timeline = [
+      ...existing.timeline,
+      { id: `t-${Date.now()}`, status: 'approved' as const, note: 'Payment confirmed. Membership activated and digital certificate issued.', actor, created_at: now },
+    ];
+    const { data, error } = await supabase
+      .from(TABLES.applications)
+      .update({
+        payment_status: 'verified',
+        payment_reference: paymentReference,
+        paid_at: now,
+        member_number: memberNumber,
+        certificate_number: certificateNumber,
+        certificate_issued_at: now,
+        timeline,
+        updated_at: now,
+      })
+      .eq('id', id)
+      .select('*')
+      .maybeSingle();
+    if (error) {
+      console.error('[databaseProvider]', error.message);
+      return undefined;
+    }
+
+    if (existing.organization_id) {
+      await supabase.from(TABLES.organizations).update({
+        membership_status: 'active', verification_status: 'verified', tier_id: existing.tier_id,
+        member_number: memberNumber, updated_at: now,
+      }).eq('id', existing.organization_id);
       await supabase.from(TABLES.memberships).insert({
-        id: `mem-${Date.now()}`,
         organization_id: existing.organization_id,
         tier_id: existing.tier_id,
         member_number: memberNumber,
@@ -750,10 +796,10 @@ export const databaseDataProvider: DataProvider = {
         starts_at: now.slice(0, 10),
         expires_at: `${new Date().getFullYear() + 1}-${now.slice(5, 10)}`,
         renewal_due_at: `${new Date().getFullYear() + 1}-${now.slice(5, 10)}`,
+        approved_from_application_id: id,
       });
     }
-
-    await writeAudit(actor, `application.${status}`, 'membership_application', id, `${existing.application_reference} → ${status}`);
+    await writeAudit(actor, 'membership.payment_completed', 'membership_application', id, `${existing.application_reference} payment verified; certificate ${certificateNumber} issued`);
     return data ? mapApplication(data as Row, existing.documents) : undefined;
   },
 
