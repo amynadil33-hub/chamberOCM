@@ -94,7 +94,22 @@ function loadStore(): void {
   if (typeof window === 'undefined') return;
   try {
     const raw = window.localStorage.getItem(STORE_KEY);
-    if (raw) store = { ...freshStore(), ...(JSON.parse(raw) as Partial<MockStore>) };
+    if (raw) {
+      const base = freshStore();
+      const saved = JSON.parse(raw) as Partial<MockStore>;
+      const mergeNewSeedRecords = <T extends { id: string }>(seed: T[], persisted?: T[]): T[] => {
+        const savedRecords = Array.isArray(persisted) ? persisted : [];
+        const savedIds = new Set(savedRecords.map((record) => record.id));
+        return [...seed.filter((record) => !savedIds.has(record.id)), ...savedRecords];
+      };
+      store = {
+        ...base,
+        ...saved,
+        events: mergeNewSeedRecords(base.events, saved.events),
+        registrations: mergeNewSeedRecords(base.registrations, saved.registrations),
+      };
+      persist();
+    }
   } catch {
     store = freshStore();
   }
