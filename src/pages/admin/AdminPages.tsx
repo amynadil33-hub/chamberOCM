@@ -233,6 +233,41 @@ interface ContentRecord {
   seo_description?: string;
 }
 
+const bodyFieldByCollection: Partial<Record<ContentCollection, keyof ContentRecord>> = {
+  news: 'body_markdown',
+  events: 'description_markdown',
+  publications: 'description_markdown',
+  policy: 'body_markdown',
+  msme: 'description_markdown',
+  councils: 'full_description_markdown',
+  notices: 'body_markdown',
+};
+
+const detailQueryKeyByCollection: Partial<Record<ContentCollection, string>> = {
+  news: 'news',
+  events: 'event',
+  publications: 'publication',
+  policy: 'policy',
+  councils: 'council',
+};
+
+const newRecordDefaults = (collection: ContentCollection): Record<string, unknown> => {
+  switch (collection) {
+    case 'events':
+      return { event_type: 'forum', starts_at: new Date().toISOString() };
+    case 'publications':
+      return { publication_type: 'research', summary: '', file_path: '', page_count: 0 };
+    case 'policy':
+      return { category: 'General', summary: '', progress_percent: 0 };
+    case 'msme':
+      return { program_type: 'training', provider: '', summary: '', eligibility: '' };
+    case 'notices':
+      return { audience_type: 'all_members' };
+    default:
+      return {};
+  }
+};
+
 const ContentManager: React.FC<{
   collection: ContentCollection;
   title: string;
@@ -272,11 +307,13 @@ const ContentManager: React.FC<{
       return;
     }
     const base = items.find((i) => i.id === editing.id) ?? {};
+    const bodyField = bodyFieldByCollection[collection];
     setSaving(true);
     try {
       await dataProvider.saveContent(
         collection,
         {
+          ...newRecordDefaults(collection),
           ...(base as Record<string, unknown>),
           id: editing.id,
           title: form.title,
@@ -286,13 +323,19 @@ const ContentManager: React.FC<{
           featured: form.featured,
           seo_title: form.seo_title,
           seo_description: form.seo_description,
-          body_markdown: form.body,
+          ...(bodyField ? { [bodyField]: form.body } : {}),
           published_at: (base as ContentRecord).published_at ?? new Date().toISOString(),
           is_demo: false,
         } as never,
         user?.full_name ?? 'Editor',
       );
-      await queryClient.refetchQueries({ queryKey: [queryKey], exact: true });
+      const detailQueryKey = detailQueryKeyByCollection[collection];
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [queryKey] }),
+        ...(detailQueryKey && detailQueryKey !== queryKey
+          ? [queryClient.invalidateQueries({ queryKey: [detailQueryKey] })]
+          : []),
+      ]);
       setEditing(null);
       toast({ title: 'Content saved', description: `${form.title} has been saved as ${form.status}.` });
     } catch (error) {
@@ -306,7 +349,13 @@ const ContentManager: React.FC<{
   const remove = async (record: ContentRecord) => {
     if (!window.confirm(`Delete “${record.title ?? record.name}”? This cannot be undone.`)) return;
     await dataProvider.deleteContent(collection, record.id, user?.full_name ?? 'Editor');
-    await queryClient.invalidateQueries({ queryKey: [queryKey] });
+    const detailQueryKey = detailQueryKeyByCollection[collection];
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: [queryKey] }),
+      ...(detailQueryKey && detailQueryKey !== queryKey
+        ? [queryClient.invalidateQueries({ queryKey: [detailQueryKey] })]
+        : []),
+    ]);
     toast({ title: 'Content deleted' });
   };
 
@@ -365,10 +414,12 @@ const ContentManager: React.FC<{
                   </select>
                 </div>
               </div>
-              <div>
-                <FieldLabel htmlFor="cm-body">Body (Markdown)</FieldLabel>
-                <textarea id="cm-body" rows={7} className={`${inputClass} font-mono text-[13px]`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="## Heading&#10;&#10;Body text…" />
-              </div>
+              {bodyFieldByCollection[collection] && (
+                <div>
+                  <FieldLabel htmlFor="cm-body">Body (Markdown)</FieldLabel>
+                  <textarea id="cm-body" rows={7} className={`${inputClass} font-mono text-[13px]`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="## Heading&#10;&#10;Body text…" />
+                </div>
+              )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <FieldLabel htmlFor="cm-seotitle">SEO title</FieldLabel>

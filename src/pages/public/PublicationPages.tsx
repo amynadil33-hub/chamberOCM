@@ -103,7 +103,7 @@ export const PublicationsPage: React.FC = () => {
                   <BookOpen className="h-9 w-9 text-white/60" aria-hidden="true" />
                 </div>
                 <div className="flex flex-1 flex-col p-5">
-                  <Badge status="published" label={typeLabels[item.publication_type]} className="self-start" />
+                  <Badge status="published" label={typeLabels[item.publication_type] ?? 'Publication'} className="self-start" />
                   <h2 className="mt-3 text-[16px] font-semibold leading-snug text-ink">
                     <Link to={`/publications/${item.slug}`} className="hover:text-brand">
                       {item.title}
@@ -201,7 +201,7 @@ export const PublicationDetailPage: React.FC = () => {
   return (
     <>
       <PageHeader
-        eyebrow={typeLabels[publication.publication_type] ?? titleCase(publication.publication_type)}
+        eyebrow={typeLabels[publication.publication_type] ?? titleCase(publication.publication_type || 'publication')}
         title={publication.title}
         description={publication.summary}
         breadcrumbs={[{ label: 'Publications', to: '/publications' }, { label: publication.title }]}
@@ -220,7 +220,7 @@ export const PublicationDetailPage: React.FC = () => {
               <dl className="space-y-3 text-[14px]">
                 <div>
                   <dt className="text-[12px] uppercase tracking-wider text-ink-muted">Type</dt>
-                  <dd className="text-ink">{typeLabels[publication.publication_type]}</dd>
+                  <dd className="text-ink">{typeLabels[publication.publication_type] ?? 'Publication'}</dd>
                 </div>
                 <div>
                   <dt className="text-[12px] uppercase tracking-wider text-ink-muted">Published</dt>
@@ -250,4 +250,3 @@ export const PublicationDetailPage: React.FC = () => {
     </>
   );
 };
-

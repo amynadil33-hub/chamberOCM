@@ -108,9 +108,15 @@ const contentColumns: Record<ContentCollection, readonly string[]> = {
 function contentPayload(collection: ContentCollection, record: Record<string, unknown>): Record<string, unknown> {
   const normalized = { ...record };
 
-  if (collection === 'councils') normalized.full_description_markdown ??= normalized.body_markdown;
-  if (collection === 'events' || collection === 'publications' || collection === 'msme') {
-    normalized.description_markdown ??= normalized.body_markdown;
+  // The shared admin form historically submitted `body_markdown` for every
+  // content type. Keep accepting that shape, but always copy the latest value
+  // into the column used by the public page (including when editing an
+  // existing record whose destination column is already populated).
+  if (normalized.body_markdown !== undefined) {
+    if (collection === 'councils') normalized.full_description_markdown = normalized.body_markdown;
+    if (collection === 'events' || collection === 'publications' || collection === 'msme') {
+      normalized.description_markdown = normalized.body_markdown;
+    }
   }
   if (collection === 'events') normalized.starts_at ??= normalized.published_at ?? new Date().toISOString();
   if (collection === 'submissions') {
