@@ -11,6 +11,7 @@ import {
   EmptyState,
   Markdown,
   PageHeader,
+  SkeletonList,
   inputClass,
 } from '@/components/common/ui';
 import { usePageMeta } from '@/components/layout/PublicLayout';
@@ -184,11 +185,31 @@ export const AnnualReportsPage: React.FC = () => {
 
 export const PublicationDetailPage: React.FC = () => {
   const { slug = '' } = useParams();
-  const { data: publication } = useQuery({
+  const { data: publication, isPending, isError } = useQuery({
     queryKey: ['publication', slug],
     queryFn: () => dataProvider.publication(slug),
   });
   usePageMeta(publication?.title ?? 'Publication', publication?.summary);
+
+  if (isPending) {
+    return (
+      <Container className="py-20">
+        <SkeletonList rows={3} />
+      </Container>
+    );
+  }
+
+  if (isError && !publication) {
+    return (
+      <Container className="py-20">
+        <EmptyState
+          title="Publication temporarily unavailable"
+          description="The publication service could not be reached. Please try again shortly."
+          action={<ButtonLink to="/publications">Back to publications</ButtonLink>}
+        />
+      </Container>
+    );
+  }
 
   if (!publication) {
     return (

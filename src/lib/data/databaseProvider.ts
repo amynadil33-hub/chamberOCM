@@ -137,7 +137,11 @@ function contentPayload(collection: ContentCollection, record: Record<string, un
 
 type Row = Record<string, unknown>;
 
-/** Never throw at the UI boundary — log and return a safe fallback. */
+/**
+ * Surface backend failures to React Query so it can retain the last successful
+ * value. Returning []/undefined for a network error makes valid content
+ * disappear during a background refresh.
+ */
 async function safeList<T>(
   run: () => PromiseLike<{ data: unknown; error: { message: string } | null }>,
   map: (row: Row) => T,
@@ -145,14 +149,11 @@ async function safeList<T>(
   if (!supabase) return [];
   try {
     const { data, error } = await run();
-    if (error) {
-      console.error('[databaseProvider]', error.message);
-      return [];
-    }
+    if (error) throw new Error(error.message);
     return ((data as Row[]) ?? []).map(map);
   } catch (error) {
     console.error('[databaseProvider]', error);
-    return [];
+    throw error instanceof Error ? error : new Error('The database request failed.');
   }
 }
 
@@ -163,11 +164,12 @@ async function safeOne<T>(
   if (!supabase) return undefined;
   try {
     const { data, error } = await run();
-    if (error || !data) return undefined;
+    if (error) throw new Error(error.message);
+    if (!data) return undefined;
     return map(data as Row);
   } catch (error) {
     console.error('[databaseProvider]', error);
-    return undefined;
+    throw error instanceof Error ? error : new Error('The database request failed.');
   }
 }
 
