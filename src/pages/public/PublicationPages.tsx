@@ -185,10 +185,11 @@ export const AnnualReportsPage: React.FC = () => {
 
 export const PublicationDetailPage: React.FC = () => {
   const { slug = '' } = useParams();
-  const { data: publication, isPending, isError } = useQuery({
-    queryKey: ['publication', slug],
-    queryFn: () => dataProvider.publication(slug),
+  const { data: publications = [], isPending, isError } = useQuery({
+    queryKey: ['publications'],
+    queryFn: () => dataProvider.publications(),
   });
+  const publication = publications.find((item) => item.slug === slug);
   usePageMeta(publication?.title ?? 'Publication', publication?.summary);
 
   if (isPending) {

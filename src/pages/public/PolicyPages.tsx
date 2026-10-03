@@ -12,6 +12,7 @@ import {
   Markdown,
   PageHeader,
   SectionHeading,
+  SkeletonList,
   inputClass,
 } from '@/components/common/ui';
 import { usePageMeta } from '@/components/layout/PublicLayout';
@@ -173,8 +174,32 @@ export const PolicyPositionsPage: React.FC = () => {
 
 export const PolicyDetailPage: React.FC = () => {
   const { slug = '' } = useParams();
-  const { data: item } = useQuery({ queryKey: ['policy', slug], queryFn: () => dataProvider.policyItem(slug) });
+  const { data: items = [], isPending, isError } = useQuery({
+    queryKey: ['policy'],
+    queryFn: () => dataProvider.policyItems(),
+  });
+  const item = items.find((policyItem) => policyItem.slug === slug);
   usePageMeta(item?.title ?? 'Policy position', item?.summary);
+
+  if (isPending) {
+    return (
+      <Container className="py-20">
+        <SkeletonList rows={3} />
+      </Container>
+    );
+  }
+
+  if (isError && !item) {
+    return (
+      <Container className="py-20">
+        <EmptyState
+          title="Policy position temporarily unavailable"
+          description="The policy service could not be reached. Please try again shortly."
+          action={<ButtonLink to="/policy">Back to policy</ButtonLink>}
+        />
+      </Container>
+    );
+  }
 
   if (!item) {
     return (
