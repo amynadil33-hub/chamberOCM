@@ -217,6 +217,12 @@ export interface NewsPost {
   published_at: string;
   seo_title?: string;
   seo_description?: string;
+  cover_image_path?: string;
+  cover_image_alt?: string;
+  cover_image_position?: string;
+  content_image_path?: string;
+  content_image_alt?: string;
+  content_image_position?: string;
   is_demo: boolean;
 }
 
@@ -293,6 +299,12 @@ export interface Publication {
   published_at: string;
   status: ContentStatus;
   featured: boolean;
+  cover_image_path?: string;
+  cover_image_alt?: string;
+  cover_image_position?: string;
+  content_image_path?: string;
+  content_image_alt?: string;
+  content_image_position?: string;
   is_demo: boolean;
 }
 

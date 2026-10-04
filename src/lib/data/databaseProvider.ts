@@ -69,6 +69,8 @@ const collectionTable: Record<ContentCollection, string> = {
 const contentColumns: Record<ContentCollection, readonly string[]> = {
   news: [
     'id', 'category_id', 'title', 'slug', 'excerpt', 'body_markdown', 'cover_image_path',
+    'cover_image_alt', 'cover_image_position', 'content_image_path', 'content_image_alt',
+    'content_image_position',
     'author_user_id', 'author_display_name', 'status', 'featured', 'published_at',
     'seo_title', 'seo_description', 'is_demo',
   ],
@@ -80,7 +82,9 @@ const contentColumns: Record<ContentCollection, readonly string[]> = {
   ],
   publications: [
     'id', 'title', 'slug', 'publication_type', 'summary', 'description_markdown',
-    'cover_image_path', 'file_path', 'page_count', 'published_at', 'status', 'featured', 'is_demo',
+    'cover_image_path', 'cover_image_alt', 'cover_image_position', 'content_image_path',
+    'content_image_alt', 'content_image_position', 'file_path', 'page_count', 'published_at',
+    'status', 'featured', 'is_demo',
   ],
   policy: [
     'id', 'title', 'slug', 'category', 'reference_number', 'summary', 'body_markdown',
@@ -294,6 +298,12 @@ const mapNews = (r: Row): NewsPost => ({
   published_at: str(r.published_at),
   seo_title: str(r.seo_title) || undefined,
   seo_description: str(r.seo_description) || undefined,
+  cover_image_path: str(r.cover_image_path) || undefined,
+  cover_image_alt: str(r.cover_image_alt) || undefined,
+  cover_image_position: str(r.cover_image_position, 'center'),
+  content_image_path: str(r.content_image_path) || undefined,
+  content_image_alt: str(r.content_image_alt) || undefined,
+  content_image_position: str(r.content_image_position, 'center'),
   is_demo: bool(r.is_demo),
 });
 
@@ -362,6 +372,12 @@ const mapPublication = (r: Row): Publication => ({
   published_at: str(r.published_at),
   status: str(r.status, 'published') as Publication['status'],
   featured: bool(r.featured),
+  cover_image_path: str(r.cover_image_path) || undefined,
+  cover_image_alt: str(r.cover_image_alt) || undefined,
+  cover_image_position: str(r.cover_image_position, 'center'),
+  content_image_path: str(r.content_image_path) || undefined,
+  content_image_alt: str(r.content_image_alt) || undefined,
+  content_image_position: str(r.content_image_position, 'center'),
   is_demo: bool(r.is_demo),
 });
 

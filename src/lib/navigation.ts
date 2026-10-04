@@ -11,7 +11,6 @@ export interface NavItem {
 }
 
 export const publicNav: NavItem[] = [
-  { label: 'Home', to: '/' },
   {
     label: 'About',
     to: '/about',
@@ -35,7 +34,7 @@ export const publicNav: NavItem[] = [
     ],
   },
   {
-    label: 'Policy & Advocacy',
+    label: 'Advocacy',
     to: '/policy',
     children: [
       { label: 'Policy Priorities', to: '/policy', description: 'Current advocacy agenda' },
@@ -67,17 +66,16 @@ export const publicNav: NavItem[] = [
     ],
   },
   {
-    label: 'News & Media',
+    label: 'Resources',
     to: '/news',
     children: [
-      { label: 'Chamber News', to: '/news', description: 'Latest updates' },
+      { label: 'News & Media', to: '/news', description: 'Latest chamber updates' },
       { label: 'Publications', to: '/publications', description: 'Reports and research' },
       { label: 'Annual Reports', to: '/annual-reports', description: 'Yearly reporting' },
-      { label: 'Media Resources', to: '/about/corporate-profile', description: 'Brand and profile assets' },
+      { label: 'MSME Portal', to: '/msme', description: 'Support for growing businesses' },
+      { label: 'Contact MCCI', to: '/contact', description: 'Reach the chamber team' },
     ],
   },
-  { label: 'MSME Portal', to: '/msme' },
-  { label: 'Contact', to: '/contact' },
 ];
 
 export const portalNav = [
@@ -127,47 +125,23 @@ export const adminNav: AdminNavItem[] = [
 
 export const footerColumns = [
   {
-    title: 'About MCCI',
+    title: 'Explore',
     links: [
       { label: 'About the chamber', to: '/about' },
-      { label: 'Mission & vision', to: '/about/mission-vision' },
-      { label: 'History & milestones', to: '/about/history' },
-      { label: 'President & board', to: '/about/leadership' },
-      { label: 'Corporate profile', to: '/about/corporate-profile' },
-      { label: 'Partners', to: '/partners' },
-    ],
-  },
-  {
-    title: 'Membership',
-    links: [
-      { label: 'Overview', to: '/membership' },
-      { label: 'Benefits', to: '/membership/benefits' },
-      { label: 'Tiers & fees', to: '/membership/tiers' },
-      { label: 'Apply now', to: '/membership/apply' },
-      { label: 'Member directory', to: '/directory/members' },
-      { label: 'Renewals', to: '/membership/renewal' },
-    ],
-  },
-  {
-    title: 'Industry councils',
-    links: [
-      { label: 'ICT Council', to: '/councils/ict' },
-      { label: 'Tourism Council', to: '/councils/tourism' },
-      { label: 'Construction Council', to: '/councils/construction' },
-      { label: 'Fisheries & Agriculture', to: '/councils/fisheries-agriculture' },
-      { label: 'Transport Council', to: '/councils/transport' },
-      { label: 'All councils', to: '/councils' },
-    ],
-  },
-  {
-    title: 'Resources',
-    links: [
-      { label: 'News', to: '/news' },
+      { label: 'Industry councils', to: '/councils' },
+      { label: 'Policy & advocacy', to: '/policy' },
       { label: 'Events', to: '/events' },
+      { label: 'News & media', to: '/news' },
+    ],
+  },
+  {
+    title: 'Member services',
+    links: [
+      { label: 'Membership', to: '/membership' },
+      { label: 'Member directory', to: '/directory/members' },
       { label: 'Publications', to: '/publications' },
-      { label: 'Policy submissions', to: '/policy/submissions' },
       { label: 'MSME portal', to: '/msme' },
-      { label: 'Search', to: '/search' },
+      { label: 'Contact', to: '/contact' },
     ],
   },
 ];

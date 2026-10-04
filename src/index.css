@@ -132,3 +132,50 @@
 .markdown-preview ol {
   @apply my-4 ml-6;
 }
+
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
+  50% { transform: translateY(-10px) rotate(0.4deg); }
+}
+
+@keyframes hero-orbit {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(24px, -18px, 0) scale(1.08); }
+}
+
+@keyframes hero-network-drift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-18px); }
+}
+
+@keyframes hero-node-pulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+.hero-rise { animation: hero-rise 0.7s both cubic-bezier(0.22, 1, 0.36, 1); }
+.hero-delay-1 { animation-delay: 0.1s; }
+.hero-delay-2 { animation-delay: 0.2s; }
+.hero-delay-3 { animation-delay: 0.3s; }
+.hero-delay-4 { animation-delay: 0.4s; }
+.hero-float { animation: hero-float 6s ease-in-out infinite; }
+.hero-orb { animation: hero-orbit 10s ease-in-out infinite; }
+.hero-orb-two { animation-delay: -3s; animation-duration: 13s; }
+.hero-orb-three { animation-delay: -6s; animation-duration: 15s; }
+.hero-network { animation: hero-network-drift 12s ease-in-out infinite; }
+.hero-pulse-node { animation: hero-node-pulse 3s ease-in-out infinite; transform-origin: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise,
+  .hero-float,
+  .hero-orb,
+  .hero-network,
+  .hero-pulse-node {
+    animation: none !important;
+  }
+}

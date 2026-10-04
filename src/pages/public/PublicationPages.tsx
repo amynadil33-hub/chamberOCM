@@ -16,6 +16,7 @@ import {
 } from '@/components/common/ui';
 import { usePageMeta } from '@/components/layout/PublicLayout';
 import { dataProvider } from '@/lib/data/provider';
+import { publicMediaUrl } from '@/lib/supabase';
 import { formatDate, titleCase } from '@/lib/utils/format';
 
 const typeLabels: Record<string, string> = {
@@ -100,8 +101,12 @@ export const PublicationsPage: React.FC = () => {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filtered.map((item) => (
               <Card key={item.id} className="flex flex-col overflow-hidden hover:-translate-y-0.5 hover:shadow-md">
-                <div className="flex h-32 items-center justify-center bg-gradient-to-br from-brand-deep to-brand">
-                  <BookOpen className="h-9 w-9 text-white/60" aria-hidden="true" />
+                <div className="flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-brand-deep to-brand">
+                  {item.cover_image_path ? (
+                    <img src={publicMediaUrl(item.cover_image_path)} alt={item.cover_image_alt ?? ''} className="h-full w-full object-cover" style={{ objectPosition: item.cover_image_position ?? 'center' }} />
+                  ) : (
+                    <BookOpen className="h-9 w-9 text-white/60" aria-hidden="true" />
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col p-5">
                   <Badge status="published" label={typeLabels[item.publication_type] ?? 'Publication'} className="self-start" />
@@ -227,10 +232,23 @@ export const PublicationDetailPage: React.FC = () => {
         title={publication.title}
         description={publication.summary}
         breadcrumbs={[{ label: 'Publications', to: '/publications' }, { label: publication.title }]}
+        imageUrl={publicMediaUrl(publication.cover_image_path)}
+        imageAlt={publication.cover_image_alt}
+        imagePosition={publication.cover_image_position}
       />
       <Container className="py-14">
         <div className="grid gap-8 lg:grid-cols-12">
           <div className="lg:col-span-8">
+            {publication.content_image_path && (
+              <figure className="mb-8 overflow-hidden rounded-lg border border-surface-border bg-surface-page">
+                <img
+                  src={publicMediaUrl(publication.content_image_path)}
+                  alt={publication.content_image_alt ?? ''}
+                  className="aspect-[16/9] w-full object-cover"
+                  style={{ objectPosition: publication.content_image_position ?? 'center' }}
+                />
+              </figure>
+            )}
             <Markdown content={publication.description_markdown} />
             <DemoNotice className="mt-8" />
           </div>

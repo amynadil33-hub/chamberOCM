@@ -38,10 +38,11 @@ import { formatCurrency, formatDate, isUpcoming } from '@/lib/utils/format';
 import { membershipTiers } from '@/data/mockSeed';
 
 const councilIcons: Record<string, React.ElementType> = { Cpu, Palmtree, HardHat, Fish, Ship };
+const statAccentClasses = ['bg-cyan-300', 'bg-emerald-300', 'bg-amber-300', 'bg-fuchsia-300'];
 
 const HeroPattern: React.FC = () => (
   <svg
-    className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.18]"
+    className="hero-network pointer-events-none absolute inset-0 h-full w-full opacity-[0.22]"
     viewBox="0 0 1200 600"
     fill="none"
     aria-hidden="true"
@@ -50,7 +51,8 @@ const HeroPattern: React.FC = () => (
     <defs>
       <linearGradient id="hero-line" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
-        <stop offset="100%" stopColor="#526FBD" stopOpacity="0.2" />
+        <stop offset="55%" stopColor="#67E8F9" stopOpacity="0.65" />
+        <stop offset="100%" stopColor="#6EE7B7" stopOpacity="0.2" />
       </linearGradient>
     </defs>
     {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -64,7 +66,7 @@ const HeroPattern: React.FC = () => (
       [960, 400],
       [1090, 330],
     ].map(([cx, cy], i) => (
-      <g key={i}>
+      <g key={i} className="hero-pulse-node" style={{ animationDelay: `${i * 0.35}s` }}>
         <circle cx={cx} cy={cy} r="5" fill="#FFFFFF" />
         <circle cx={cx} cy={cy} r="14" stroke="#FFFFFF" strokeWidth="0.75" fill="none" opacity="0.5" />
       </g>
@@ -104,23 +106,30 @@ const AppLayout: React.FC = () => {
   return (
     <>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-deep via-brand-dark to-brand text-white">
+      <section className="relative isolate overflow-hidden bg-[linear-gradient(120deg,#101f46_0%,#334fa4_48%,#087b77_100%)] text-white">
+        <div className="hero-orb hero-orb-one pointer-events-none absolute -left-20 top-12 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" aria-hidden="true" />
+        <div className="hero-orb hero-orb-two pointer-events-none absolute right-[8%] top-[-6rem] h-80 w-80 rounded-full bg-fuchsia-400/20 blur-3xl" aria-hidden="true" />
+        <div className="hero-orb hero-orb-three pointer-events-none absolute bottom-[-9rem] left-[42%] h-96 w-96 rounded-full bg-emerald-300/20 blur-3xl" aria-hidden="true" />
         <HeroPattern />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-brand-deep/30 to-transparent" aria-hidden="true" />
         <Container className="relative py-16 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-12">
             <div className="lg:col-span-7">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-white/80">
+              <span className="hero-rise inline-flex items-center gap-2 rounded-full border border-cyan-100/25 bg-white/10 px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-cyan-50 backdrop-blur-sm">
                 <Globe2 className="h-3.5 w-3.5" aria-hidden="true" />
                 National business representation
               </span>
-              <h1 className="mt-6 text-[38px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[58px]">
-                Advancing Maldivian Enterprise
+              <h1 className="hero-rise hero-delay-1 mt-6 text-[40px] font-semibold leading-[1.05] tracking-[-0.025em] sm:text-[54px] lg:text-[62px]">
+                Advancing
+                <span className="block bg-gradient-to-r from-white via-cyan-100 to-emerald-200 bg-clip-text text-transparent">
+                  Maldivian Enterprise
+                </span>
               </h1>
-              <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-white/80">
+              <p className="hero-rise hero-delay-2 mt-5 max-w-xl text-[17px] leading-relaxed text-white/78 sm:text-[18px]">
                 Representing business, strengthening industries and building a more competitive Maldives.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link to="/membership/apply" className={buttonClass('secondary', 'px-6 py-3 text-[15px]')}>
+              <div className="hero-rise hero-delay-3 mt-8 flex flex-wrap gap-3">
+                <Link to="/membership/apply" className={buttonClass('secondary', 'rounded-full px-6 py-3 text-[15px] shadow-[0_12px_30px_rgba(15,97,67,0.28)]')}>
                   Become a Member
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
@@ -128,15 +137,16 @@ const AppLayout: React.FC = () => {
                   to="/about"
                   className={buttonClass(
                     'outline',
-                    'border-white/25 bg-white/10 px-6 py-3 text-[15px] text-white hover:border-white/40 hover:bg-white/20',
+                    'rounded-full border-white/25 bg-white/10 px-6 py-3 text-[15px] text-white backdrop-blur-sm hover:border-white/40 hover:bg-white/20',
                   )}
                 >
                   Explore MCCI
                 </Link>
               </div>
-              <dl className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {siteConfig.stats.map((stat) => (
-                  <div key={stat.label} className="rounded-lg border border-white/15 bg-white/5 p-4">
+              <dl className="hero-rise hero-delay-4 mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {siteConfig.stats.map((stat, index) => (
+                  <div key={stat.label} className="group relative overflow-hidden rounded-xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-sm transition-transform hover:-translate-y-1">
+                    <span className={`absolute inset-x-0 top-0 h-0.5 ${statAccentClasses[index % statAccentClasses.length]}`} aria-hidden="true" />
                     <dt className="sr-only">{stat.label}</dt>
                     <dd>
                       <span className="block font-mono text-2xl font-semibold tabular-nums text-white">{stat.value}</span>
@@ -147,13 +157,15 @@ const AppLayout: React.FC = () => {
               </dl>
             </div>
 
-            <div className="lg:col-span-5">
-              <div className="mx-auto max-w-sm rounded-xl border border-white/15 bg-white/10 p-8 backdrop-blur-sm">
+            <div className="hero-rise hero-delay-2 lg:col-span-5">
+              <div className="hero-float relative mx-auto max-w-sm rounded-[1.75rem] border border-white/20 bg-white/[0.11] p-8 shadow-[0_30px_80px_rgba(8,20,58,0.30)] backdrop-blur-md">
+                <div className="absolute -right-3 -top-3 h-20 w-20 rounded-full border border-cyan-200/25" aria-hidden="true" />
+                <div className="absolute -bottom-5 -left-5 h-28 w-28 rounded-full border border-emerald-200/20" aria-hidden="true" />
                 <div className="flex justify-center">
                   <img
                     src={LOGO_URL}
                     alt="Maldives National Chamber of Commerce & Industry official emblem"
-                    className="h-44 w-auto rounded-lg object-contain"
+                    className="relative h-44 w-auto rounded-lg object-contain drop-shadow-[0_16px_24px_rgba(10,28,66,0.3)]"
                     width={405}
                     height={341}
                   />
@@ -164,7 +176,7 @@ const AppLayout: React.FC = () => {
                 </p>
                 <Link
                   to="/directory/members"
-                  className="mt-5 flex items-center justify-center gap-2 rounded-md border border-white/20 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/10"
+                  className="relative mt-5 flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.04] py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/10"
                 >
                   <Users className="h-4 w-4" aria-hidden="true" />
                   Browse the member directory

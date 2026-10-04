@@ -119,9 +119,18 @@ export const PageHeader: React.FC<{
   description?: string;
   breadcrumbs?: { label: string; to?: string }[];
   children?: React.ReactNode;
-}> = ({ eyebrow, title, description, breadcrumbs, children }) => (
-  <header className="border-b border-brand-dark/40 bg-gradient-to-br from-brand-deep via-brand-dark to-brand text-white">
-    <Container className="py-10 sm:py-14">
+  imageUrl?: string;
+  imageAlt?: string;
+  imagePosition?: string;
+}> = ({ eyebrow, title, description, breadcrumbs, children, imageUrl, imageAlt = '', imagePosition = 'center' }) => (
+  <header className="relative overflow-hidden border-b border-brand-dark/40 bg-gradient-to-br from-brand-deep via-brand-dark to-brand text-white">
+    {imageUrl && (
+      <>
+        <img src={imageUrl} alt={imageAlt} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: imagePosition }} />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-deep/95 via-brand-dark/85 to-brand/55" aria-hidden="true" />
+      </>
+    )}
+    <Container className="relative py-10 sm:py-14">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb" className="mb-5">
           <ol className="flex flex-wrap items-center gap-1 text-[13px] text-white/70">

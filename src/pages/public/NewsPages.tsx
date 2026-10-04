@@ -17,6 +17,7 @@ import {
 import { usePageMeta } from '@/components/layout/PublicLayout';
 import { toast } from '@/components/ui/use-toast';
 import { dataProvider } from '@/lib/data/provider';
+import { publicMediaUrl } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils/format';
 
 export const NewsPage: React.FC = () => {
@@ -86,8 +87,12 @@ export const NewsPage: React.FC = () => {
           <>
             {featured && (
               <Card className="mb-8 overflow-hidden lg:flex">
-                <div className="flex h-48 items-center justify-center bg-gradient-to-br from-brand-deep to-brand lg:h-auto lg:w-2/5">
-                  <Newspaper className="h-12 w-12 text-white/60" aria-hidden="true" />
+                <div className="flex h-48 items-center justify-center overflow-hidden bg-gradient-to-br from-brand-deep to-brand lg:h-auto lg:w-2/5">
+                  {featured.cover_image_path ? (
+                    <img src={publicMediaUrl(featured.cover_image_path)} alt={featured.cover_image_alt ?? ''} className="h-full w-full object-cover" style={{ objectPosition: featured.cover_image_position ?? 'center' }} />
+                  ) : (
+                    <Newspaper className="h-12 w-12 text-white/60" aria-hidden="true" />
+                  )}
                 </div>
                 <div className="p-7 lg:w-3/5">
                   <div className="flex flex-wrap items-center gap-2">
@@ -109,8 +114,12 @@ export const NewsPage: React.FC = () => {
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {rest.map((post) => (
                 <Card key={post.id} className="flex flex-col overflow-hidden hover:-translate-y-0.5 hover:shadow-md">
-                  <div className="flex h-32 items-center justify-center bg-gradient-to-br from-brand-dark to-brand-medium">
-                    <Newspaper className="h-8 w-8 text-white/60" aria-hidden="true" />
+                  <div className="flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-brand-dark to-brand-medium">
+                    {post.cover_image_path ? (
+                      <img src={publicMediaUrl(post.cover_image_path)} alt={post.cover_image_alt ?? ''} className="h-full w-full object-cover" style={{ objectPosition: post.cover_image_position ?? 'center' }} />
+                    ) : (
+                      <Newspaper className="h-8 w-8 text-white/60" aria-hidden="true" />
+                    )}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
                     <Badge status="published" label={post.category} className="self-start" />
@@ -161,6 +170,9 @@ export const NewsDetailPage: React.FC = () => {
         title={post.title}
         description={post.excerpt}
         breadcrumbs={[{ label: 'News', to: '/news' }, { label: post.title }]}
+        imageUrl={publicMediaUrl(post.cover_image_path)}
+        imageAlt={post.cover_image_alt}
+        imagePosition={post.cover_image_position}
       />
       <Container className="py-14">
         <div className="grid gap-10 lg:grid-cols-12">
@@ -171,6 +183,16 @@ export const NewsDetailPage: React.FC = () => {
               <span>{post.author_display_name}</span>
               {post.is_demo && <DemoBadge />}
             </div>
+            {post.content_image_path && (
+              <figure className="mt-8 overflow-hidden rounded-lg border border-surface-border bg-surface-page">
+                <img
+                  src={publicMediaUrl(post.content_image_path)}
+                  alt={post.content_image_alt ?? ''}
+                  className="aspect-[16/9] w-full object-cover"
+                  style={{ objectPosition: post.content_image_position ?? 'center' }}
+                />
+              </figure>
+            )}
             <Markdown content={post.body_markdown} className="mt-2" />
 
             <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-surface-border pt-6">

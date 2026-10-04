@@ -43,8 +43,33 @@ export const NewsletterForm: React.FC<{ source?: string; compact?: boolean }> = 
     }
   };
 
+  if (compact) {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-2" noValidate>
+        <div className="flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
+          <label htmlFor={`nl-email-${source}`} className="sr-only">Email address</label>
+          <input
+            id={`nl-email-${source}`}
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`${inputClass} min-w-0 flex-1 border-white/15 bg-white/10 text-white placeholder:text-white/45 focus:border-cyan-300`}
+            placeholder="Email address"
+            autoComplete="email"
+            aria-invalid={Boolean(error)}
+          />
+          <Button type="submit" loading={loading} className="shrink-0 bg-white text-brand-deep hover:bg-cyan-50">
+            Subscribe
+          </Button>
+        </div>
+        <FieldError message={error} />
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className={compact ? 'space-y-3' : 'space-y-3'} noValidate>
+    <form onSubmit={handleSubmit} className="space-y-3" noValidate>
       <div>
         <FieldLabel htmlFor={`nl-name-${source}`}>Name</FieldLabel>
         <input
@@ -81,15 +106,17 @@ export const NewsletterForm: React.FC<{ source?: string; compact?: boolean }> = 
 };
 
 const Footer: React.FC = () => (
-  <footer className="mt-auto bg-brand-deep text-white">
-    <Container className="py-14">
-      <div className="grid gap-10 lg:grid-cols-12">
+  <footer className="relative mt-auto overflow-hidden bg-[#101F46] text-white">
+    <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" aria-hidden="true" />
+    <div className="pointer-events-none absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-chamber-green/10 blur-3xl" aria-hidden="true" />
+    <Container className="relative py-12">
+      <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-4">
           <Logo variant="light" />
-          <p className="mt-5 max-w-sm text-[14px] leading-relaxed text-white/70">
+          <p className="mt-4 max-w-sm text-[13.5px] leading-relaxed text-white/65">
             {siteConfig.description}
           </p>
-          <ul className="mt-6 space-y-3 text-[13px] text-white/70">
+          <ul className="mt-5 space-y-2.5 text-[13px] text-white/65">
             <li className="flex gap-2.5">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-white/50" aria-hidden="true" />
               <span>{siteConfig.address}</span>
@@ -105,7 +132,7 @@ const Footer: React.FC = () => (
               </a>
             </li>
           </ul>
-          <div className="mt-6 flex gap-3">
+          <div className="mt-5 flex gap-2">
             {[
               { Icon: Facebook, href: siteConfig.social.facebook, label: 'Facebook' },
               { Icon: Linkedin, href: siteConfig.social.linkedin, label: 'LinkedIn' },
@@ -117,7 +144,7 @@ const Footer: React.FC = () => (
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`MCCI on ${label}`}
-                className="rounded-md border border-white/15 p-2 text-white/70 transition-colors hover:border-white/40 hover:text-white"
+                className="rounded-full border border-white/15 p-2 text-white/65 transition-all hover:-translate-y-0.5 hover:border-cyan-300/60 hover:bg-white/10 hover:text-white"
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />
               </a>
@@ -125,18 +152,18 @@ const Footer: React.FC = () => (
           </div>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:col-span-4">
           {footerColumns.map((column) => (
             <nav key={column.title} aria-label={column.title}>
-              <h3 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.14em] text-white/50">
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200/70">
                 {column.title}
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {column.links.map((link) => (
                   <li key={link.to + link.label}>
                     <Link
                       to={link.to}
-                      className="rounded text-[13px] text-white/75 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                      className="rounded text-[13px] text-white/65 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                     >
                       {link.label}
                     </Link>
@@ -147,22 +174,23 @@ const Footer: React.FC = () => (
           ))}
         </div>
 
-        <div className="lg:col-span-3">
-          <h3 className="mb-1 text-[12px] font-semibold uppercase tracking-[0.14em] text-white/50">
+        <div className="lg:col-span-4">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur-sm">
+          <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200/70">
             Business bulletin
           </h3>
-          <p className="mb-4 text-[13px] text-white/70">
+          <p className="mb-4 max-w-md text-[13px] leading-relaxed text-white/65">
             Policy updates, event invitations and member notices.
           </p>
-          <div className="rounded-lg bg-white p-4 text-ink">
-            <NewsletterForm compact />
+          <NewsletterForm compact />
+          <p className="mt-3 text-[11px] text-white/40">Useful updates only. Unsubscribe at any time.</p>
           </div>
         </div>
       </div>
     </Container>
 
     <div className="border-t border-white/10">
-      <Container className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+      <Container className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[12px] text-white/50">
           © {new Date().getFullYear()} {siteConfig.legalName}. {siteConfig.registrationDetails}.
         </p>

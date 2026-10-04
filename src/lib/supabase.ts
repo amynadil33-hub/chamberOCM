@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 /**
  * Database client.
@@ -27,7 +27,7 @@ export const SUPABASE_SCHEMA = read('VITE_SUPABASE_SCHEMA', 'public');
 
 export const isDatabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_KEY);
 
-export const supabase: SupabaseClient | null = isDatabaseConfigured
+export const supabase = isDatabaseConfigured
   ? createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: {
         persistSession: true,
@@ -41,6 +41,45 @@ export const supabase: SupabaseClient | null = isDatabaseConfigured
 
 /** Private bucket holding membership application documents. */
 export const MEMBER_DOCUMENTS_BUCKET = 'member-documents';
+export const PUBLIC_MEDIA_BUCKET = 'public-media';
+
+/** Resolve either a complete URL/data URL or a path in the public media bucket. */
+export function publicMediaUrl(path?: string | null): string | undefined {
+  if (!path) return undefined;
+  if (/^(?:https?:|data:|blob:)/i.test(path)) return path;
+  if (!supabase) return path.startsWith('/') ? path : `/${path}`;
+  return supabase.storage.from(PUBLIC_MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+/** Upload an editor-selected image. Demo mode uses a data URL so preview remains functional. */
+export async function uploadPublicImage(
+  file: File,
+  collection: 'news' | 'publications',
+  recordId: string,
+  slot: 'hero' | 'content',
+): Promise<{ path: string | null; error: string | null }> {
+  if (!file.type.startsWith('image/')) return { path: null, error: 'Please choose an image file.' };
+  if (file.size > 8 * 1024 * 1024) return { path: null, error: 'Images must be 8 MB or smaller.' };
+
+  if (!supabase) {
+    const path = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('The image could not be read.'));
+      reader.readAsDataURL(file);
+    }).catch(() => null);
+    return path ? { path, error: null } : { path: null, error: 'The image could not be read.' };
+  }
+
+  const extension = file.name.split('.').pop()?.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'jpg';
+  const path = `${collection}/${recordId}/${slot}-${crypto.randomUUID()}.${extension}`;
+  const { error } = await supabase.storage.from(PUBLIC_MEDIA_BUCKET).upload(path, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type,
+  });
+  return error ? { path: null, error: error.message } : { path, error: null };
+}
 
 /**
  * Creates a short-lived signed URL for a private member document.

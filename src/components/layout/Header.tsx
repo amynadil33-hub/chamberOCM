@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, LogOut, Menu, Search, ShieldCheck, User, X } from 'lucide-react';
 import { Container, Logo, buttonClass } from '@/components/common/ui';
 import { publicNav } from '@/lib/navigation';
-import { siteConfig, isMockMode } from '@/lib/config';
+import { isMockMode } from '@/lib/config';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { cn } from '@/lib/utils';
 
@@ -32,35 +32,15 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full">
-      {/* Slim institutional top bar */}
-      <div className="hidden bg-brand-deep text-white lg:block">
-        <Container className="flex h-9 items-center justify-between text-[12px]">
-          <p className="text-white/70">
-            {siteConfig.legalName} — {siteConfig.officeHours}
-          </p>
-          <div className="flex items-center gap-5">
-            <a href={`mailto:${siteConfig.generalEmail}`} className="text-white/70 hover:text-white">
-              {siteConfig.generalEmail}
-            </a>
-            <span className="text-white/25">|</span>
-            <span
-              className="cursor-not-allowed font-thaana text-white/50"
-              title="Dhivehi language support is being prepared"
-            >
-              ދިވެހި — Coming Soon
-            </span>
-          </div>
-        </Container>
-      </div>
-
-      <div className="border-b border-surface-border bg-white/95 backdrop-blur">
-        <Container className="flex h-[68px] items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 w-full border-b border-white/60 bg-white/90 shadow-[0_8px_30px_rgba(24,43,91,0.07)] backdrop-blur-xl">
+      <div className="h-0.5 bg-gradient-to-r from-brand via-cyan-500 to-chamber-green" aria-hidden="true" />
+      <div>
+        <Container className="flex h-[72px] items-center justify-between gap-4">
           <Link to="/" className="rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="MCCI home">
             <Logo />
           </Link>
 
-          <nav className="hidden items-center gap-0.5 xl:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-1 xl:flex" aria-label="Primary">
             {publicNav.map((item) => (
               <div
                 key={item.label}
@@ -71,21 +51,21 @@ const Header: React.FC = () => {
                 {item.children ? (
                   <button
                     type="button"
-                    onClick={() => setOpenMenu(openMenu === item.label ? null : item.label)}
+                    onClick={() => setOpenMenu(item.label)}
                     aria-expanded={openMenu === item.label}
                     className={cn(
-                      'flex items-center gap-1 rounded-md px-2.5 py-2 text-[13.5px] font-medium text-ink transition-colors hover:bg-brand-light hover:text-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                      'group flex items-center gap-1.5 rounded-full px-3 py-2 text-[13.5px] font-medium text-ink-soft transition-all hover:bg-brand-light hover:text-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand',
                       location.pathname.startsWith(item.to) && item.to !== '/' && 'text-brand-deep',
                     )}
                   >
                     {item.label}
-                    <ChevronDown className="h-3.5 w-3.5 text-ink-muted" aria-hidden="true" />
+                    <ChevronDown className={cn('h-3.5 w-3.5 text-ink-muted transition-transform', openMenu === item.label && 'rotate-180')} aria-hidden="true" />
                   </button>
                 ) : (
                   <Link
                     to={item.to}
                     className={cn(
-                      'block rounded-md px-2.5 py-2 text-[13.5px] font-medium text-ink transition-colors hover:bg-brand-light hover:text-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                      'block rounded-full px-3 py-2 text-[13.5px] font-medium text-ink-soft transition-all hover:bg-brand-light hover:text-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand',
                       location.pathname === item.to && 'text-brand-deep',
                     )}
                   >
@@ -94,15 +74,15 @@ const Header: React.FC = () => {
                 )}
 
                 {item.children && openMenu === item.label && (
-                  <div className="absolute left-0 top-full w-[380px] pt-2">
-                    <div className="rounded-lg border border-surface-border bg-white p-2 shadow-lg">
+                  <div className="absolute left-1/2 top-full w-[390px] -translate-x-1/2 pt-3">
+                    <div className="animate-slide-in rounded-2xl border border-surface-border/80 bg-white/95 p-2.5 shadow-[0_20px_60px_rgba(24,43,91,0.16)] backdrop-blur-xl">
                       {item.children.map((child) => (
                         <Link
                           key={child.to + child.label}
                           to={child.to}
-                          className="block rounded-md px-3 py-2.5 transition-colors hover:bg-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                          className="group block rounded-xl px-3.5 py-2.5 transition-colors hover:bg-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                         >
-                          <span className="block text-[13.5px] font-semibold text-ink">{child.label}</span>
+                          <span className="block text-[13.5px] font-semibold text-ink transition-colors group-hover:text-brand-deep">{child.label}</span>
                           {child.description && (
                             <span className="block text-[12px] text-ink-soft">{child.description}</span>
                           )}
@@ -115,20 +95,20 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setSearchOpen((s) => !s)}
               aria-label="Open search"
               aria-expanded={searchOpen}
-              className="rounded-md p-2 text-ink-soft transition-colors hover:bg-brand-light hover:text-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              className="rounded-full p-2.5 text-ink-soft transition-colors hover:bg-brand-light hover:text-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               <Search className="h-[18px] w-[18px]" aria-hidden="true" />
             </button>
 
             {user ? (
               <div className="hidden items-center gap-2 sm:flex">
-                <Link to={user.role === 'member' ? '/portal' : '/admin'} className={buttonClass('outline', 'px-3 py-2')}>
+                <Link to={user.role === 'member' ? '/portal' : '/admin'} className={buttonClass('outline', 'rounded-full px-3.5 py-2')}>
                   {user.role === 'member' ? (
                     <User className="h-4 w-4" aria-hidden="true" />
                   ) : (
@@ -142,7 +122,7 @@ const Header: React.FC = () => {
                     signOut();
                     navigate('/');
                   }}
-                  className={buttonClass('ghost', 'px-3 py-2')}
+                  className={buttonClass('ghost', 'rounded-full px-3 py-2')}
                 >
                   <LogOut className="h-4 w-4" aria-hidden="true" />
                   Sign out
@@ -150,10 +130,10 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <div className="hidden items-center gap-2 sm:flex">
-                <Link to="/auth/login" className={buttonClass('outline', 'px-3 py-2')}>
+                <Link to="/auth/login" className={buttonClass('ghost', 'rounded-full px-3 py-2')}>
                   Member login
                 </Link>
-                <Link to="/membership/apply" className={buttonClass('primary', 'px-3 py-2')}>
+                <Link to="/membership/apply" className={buttonClass('primary', 'rounded-full px-4 py-2 shadow-sm')}>
                   Join MCCI
                 </Link>
               </div>
@@ -162,7 +142,7 @@ const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="rounded-md p-2 text-ink transition-colors hover:bg-brand-light xl:hidden"
+              className="rounded-full p-2.5 text-ink transition-colors hover:bg-brand-light xl:hidden"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" aria-hidden="true" />
@@ -171,7 +151,7 @@ const Header: React.FC = () => {
         </Container>
 
         {searchOpen && (
-          <div className="border-t border-surface-border bg-white">
+          <div className="border-t border-surface-border bg-white/95">
             <Container className="py-3">
               <form onSubmit={submitSearch} role="search" className="flex gap-2">
                 <label htmlFor="site-search" className="sr-only">

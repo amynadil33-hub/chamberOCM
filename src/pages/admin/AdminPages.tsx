@@ -15,6 +15,7 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { dataProvider, type ContentCollection } from '@/lib/data/provider';
+import { publicMediaUrl, uploadPublicImage } from '@/lib/supabase';
 import { membershipTiers, sectors } from '@/data/mockSeed';
 import { siteConfig } from '@/lib/config';
 import { formatCurrency, formatDate, titleCase } from '@/lib/utils/format';
@@ -231,7 +232,53 @@ interface ContentRecord {
   full_description_markdown?: string;
   seo_title?: string;
   seo_description?: string;
+  cover_image_path?: string;
+  cover_image_alt?: string;
+  cover_image_position?: string;
+  content_image_path?: string;
+  content_image_alt?: string;
+  content_image_position?: string;
 }
+
+interface ContentFormState {
+  title: string;
+  slug: string;
+  status: string;
+  seo_title: string;
+  seo_description: string;
+  body: string;
+  featured: boolean;
+  cover_image_path: string;
+  cover_image_alt: string;
+  cover_image_position: string;
+  content_image_path: string;
+  content_image_alt: string;
+  content_image_position: string;
+}
+
+const emptyContentForm = (): ContentFormState => ({
+  title: '',
+  slug: '',
+  status: 'draft',
+  seo_title: '',
+  seo_description: '',
+  body: '',
+  featured: false,
+  cover_image_path: '',
+  cover_image_alt: '',
+  cover_image_position: 'center',
+  content_image_path: '',
+  content_image_alt: '',
+  content_image_position: 'center',
+});
+
+const imagePositions = [
+  ['center', 'Centre'],
+  ['top', 'Top'],
+  ['bottom', 'Bottom'],
+  ['left', 'Left'],
+  ['right', 'Right'],
+];
 
 const bodyFieldByCollection: Partial<Record<ContentCollection, keyof ContentRecord>> = {
   news: 'body_markdown',
@@ -280,11 +327,13 @@ const ContentManager: React.FC<{
   const { data: items = [] } = useQuery({ queryKey: [queryKey], queryFn: load });
   const [editing, setEditing] = useState<ContentRecord | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ title: '', slug: '', status: 'draft', seo_title: '', seo_description: '', body: '', featured: false });
+  const [uploading, setUploading] = useState<'hero' | 'content' | null>(null);
+  const [form, setForm] = useState<ContentFormState>(emptyContentForm);
+  const supportsImages = collection === 'news' || collection === 'publications';
 
   const openNew = () => {
     setEditing({ id: crypto.randomUUID() });
-    setForm({ title: '', slug: '', status: 'draft', seo_title: '', seo_description: '', body: '', featured: false });
+    setForm(emptyContentForm());
   };
 
   const openEdit = (record: ContentRecord) => {
@@ -297,7 +346,32 @@ const ContentManager: React.FC<{
       seo_description: record.seo_description ?? '',
       body: record.body_markdown ?? record.description_markdown ?? record.full_description_markdown ?? '',
       featured: Boolean(record.featured),
+      cover_image_path: record.cover_image_path ?? '',
+      cover_image_alt: record.cover_image_alt ?? '',
+      cover_image_position: record.cover_image_position ?? 'center',
+      content_image_path: record.content_image_path ?? '',
+      content_image_alt: record.content_image_alt ?? '',
+      content_image_position: record.content_image_position ?? 'center',
     });
+  };
+
+  const uploadImage = async (slot: 'hero' | 'content', file?: File) => {
+    if (!file || !editing || !supportsImages) return;
+    setUploading(slot);
+    const result = await uploadPublicImage(file, collection, editing.id, slot);
+    setUploading(null);
+    if (!result.path) {
+      toast({ title: 'Could not upload image', description: result.error ?? undefined, variant: 'destructive' });
+      return;
+    }
+    const pathField = slot === 'hero' ? 'cover_image_path' : 'content_image_path';
+    const altField = slot === 'hero' ? 'cover_image_alt' : 'content_image_alt';
+    setForm((current) => ({
+      ...current,
+      [pathField]: result.path ?? '',
+      [altField]: current[altField] || file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
+    }));
+    toast({ title: `${slot === 'hero' ? 'Hero' : 'Middle'} image uploaded` });
   };
 
   const save = async () => {
@@ -323,6 +397,16 @@ const ContentManager: React.FC<{
           featured: form.featured,
           seo_title: form.seo_title,
           seo_description: form.seo_description,
+          ...(supportsImages
+            ? {
+                cover_image_path: form.cover_image_path || null,
+                cover_image_alt: form.cover_image_alt || null,
+                cover_image_position: form.cover_image_position,
+                content_image_path: form.content_image_path || null,
+                content_image_alt: form.content_image_alt || null,
+                content_image_position: form.content_image_position,
+              }
+            : {}),
           ...(bodyField ? { [bodyField]: form.body } : {}),
           published_at: (base as ContentRecord).published_at ?? new Date().toISOString(),
           is_demo: false,
@@ -420,6 +504,76 @@ const ContentManager: React.FC<{
                   <textarea id="cm-body" rows={7} className={`${inputClass} font-mono text-[13px]`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="## Heading&#10;&#10;Body text…" />
                 </div>
               )}
+              {supportsImages && (
+                <div className="grid gap-5 border-y border-surface-border py-5 sm:grid-cols-2">
+                  {(['hero', 'content'] as const).map((slot) => {
+                    const isHero = slot === 'hero';
+                    const pathField = isHero ? 'cover_image_path' : 'content_image_path';
+                    const altField = isHero ? 'cover_image_alt' : 'content_image_alt';
+                    const positionField = isHero ? 'cover_image_position' : 'content_image_position';
+                    const imageUrl = publicMediaUrl(form[pathField]);
+                    return (
+                      <div key={slot}>
+                        <FieldLabel htmlFor={`cm-${slot}-image`}>{isHero ? 'Hero image' : 'Middle section image'}</FieldLabel>
+                        <div className="mb-3 flex h-36 items-center justify-center overflow-hidden rounded-md border border-surface-border bg-surface-page">
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt={form[altField]}
+                              className="h-full w-full object-cover"
+                              style={{ objectPosition: form[positionField] }}
+                            />
+                          ) : (
+                            <ImageIcon className="h-8 w-8 text-ink-muted" aria-hidden="true" />
+                          )}
+                        </div>
+                        <input
+                          id={`cm-${slot}-image`}
+                          type="file"
+                          accept="image/*"
+                          className="block w-full text-[12px] text-ink-soft file:mr-3 file:rounded-md file:border-0 file:bg-brand-light file:px-3 file:py-2 file:font-semibold file:text-brand-deep"
+                          onChange={(event) => {
+                            void uploadImage(slot, event.target.files?.[0]);
+                            event.currentTarget.value = '';
+                          }}
+                          disabled={uploading !== null}
+                        />
+                        <p className="mt-1 text-[11px] text-ink-muted">JPG, PNG or WebP · maximum 8 MB</p>
+                        <div className="mt-3">
+                          <FieldLabel htmlFor={`cm-${slot}-alt`}>Alternative text</FieldLabel>
+                          <input
+                            id={`cm-${slot}-alt`}
+                            className={inputClass}
+                            value={form[altField]}
+                            onChange={(event) => setForm({ ...form, [altField]: event.target.value })}
+                            placeholder="Describe the image"
+                          />
+                        </div>
+                        <div className="mt-3">
+                          <FieldLabel htmlFor={`cm-${slot}-position`}>Image focus</FieldLabel>
+                          <select
+                            id={`cm-${slot}-position`}
+                            className={inputClass}
+                            value={form[positionField]}
+                            onChange={(event) => setForm({ ...form, [positionField]: event.target.value })}
+                          >
+                            {imagePositions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                          </select>
+                        </div>
+                        {form[pathField] && (
+                          <button
+                            type="button"
+                            className="mt-3 text-[12px] font-semibold text-[#C2414B] hover:underline"
+                            onClick={() => setForm({ ...form, [pathField]: '' })}
+                          >
+                            Remove image
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <FieldLabel htmlFor="cm-seotitle">SEO title</FieldLabel>
@@ -441,8 +595,8 @@ const ContentManager: React.FC<{
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setEditing(null)} disabled={saving}>Cancel</Button>
-              <Button type="button" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save record'}</Button>
+              <Button type="button" variant="outline" onClick={() => setEditing(null)} disabled={saving || uploading !== null}>Cancel</Button>
+              <Button type="button" onClick={save} disabled={saving || uploading !== null}>{uploading ? 'Uploading…' : saving ? 'Saving…' : 'Save record'}</Button>
             </div>
           </Card>
         </div>
