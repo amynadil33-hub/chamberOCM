@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Clock, Handshake, Mail, MapPin, Phone, Search } from 'lucide-react';
+import { Clock, Handshake, Mail, MapPin, Phone, Printer, Search } from 'lucide-react';
 import {
   Badge,
   Button,
@@ -17,24 +17,23 @@ import {
   inputClass,
 } from '@/components/common/ui';
 import { usePageMeta } from '@/components/layout/PublicLayout';
-import { toast } from '@/components/ui/use-toast';
 import { dataProvider } from '@/lib/data/provider';
+import { partners as verifiedPartners } from '@/data/mockSeed';
 import { siteConfig } from '@/lib/config';
 import { formatDate } from '@/lib/utils/format';
 
 export const PartnersPage: React.FC = () => {
-  usePageMeta('Partners', 'Patron and strategic partners of the chamber.');
-  const { data: partners = [] } = useQuery({ queryKey: ['partners'], queryFn: () => dataProvider.partners() });
+  usePageMeta('Affiliations & Partners', 'Publicly identified MNCCI affiliations and technology partnership.');
+  const partners = verifiedPartners;
   return (
     <>
       <PageHeader
-        eyebrow="Partners"
-        title="Partners & Supporters"
-        description="The chamber works with patron members, strategic partners, development institutions and international chambers."
+        eyebrow="Affiliations"
+        title="Affiliations & Partners"
+        description="Publicly identified international affiliations and technology partnership."
         breadcrumbs={[{ label: 'Partners' }]}
       />
       <Container className="py-14">
-        <DemoNotice className="mb-8" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {partners.map((partner) => (
             <Card key={partner.id} className="p-6 text-center">
@@ -45,22 +44,14 @@ export const PartnersPage: React.FC = () => {
               <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-ink-muted">
                 {partner.partner_type}
               </p>
-              <p className="mt-3 text-[13px] text-ink-soft">
-                Placeholder partner record. No third-party logo is displayed until written permission is confirmed.
-              </p>
+              {partner.website && (
+                <a href={partner.website} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-[13px] font-semibold text-brand hover:underline">
+                  Visit website
+                </a>
+              )}
             </Card>
           ))}
         </div>
-        <Card className="mt-10 p-8">
-          <h2 className="text-xl font-semibold text-ink">Become a partner</h2>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-ink-soft">
-            Partnership supports chamber programmes, research and national business development. Contact the
-            secretariat to discuss partnership opportunities.
-          </p>
-          <ButtonLink to="/contact" className="mt-5">
-            Discuss partnership
-          </ButtonLink>
-        </Card>
       </Container>
     </>
   );
@@ -69,15 +60,11 @@ export const PartnersPage: React.FC = () => {
 const departments = [
   'General enquiry',
   'Membership',
-  'Events',
-  'Policy & Advocacy',
-  'MSME support',
   'Media',
-  'Finance & invoicing',
 ];
 
 export const ContactPage: React.FC = () => {
-  usePageMeta('Contact', 'Contact the MCCI secretariat, membership, events or policy teams.');
+  usePageMeta('Contact', 'Send an enquiry to MNCCI.');
   const [form, setForm] = useState({
     department: departments[0],
     name: '',
@@ -92,31 +79,8 @@ export const ContactPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const next: Record<string, string> = {};
-    if (!form.name.trim()) next.name = 'Enter your name.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Enter a valid email address.';
-    if (!form.subject.trim()) next.subject = 'Enter a subject.';
-    if (form.message.trim().length < 10) next.message = 'Please provide a little more detail.';
-    if (!form.privacy) next.privacy = 'You must accept the privacy terms to submit this form.';
-    setErrors(next);
-    if (Object.keys(next).length > 0) return;
-
-    setLoading(true);
-    await dataProvider.createInquiry({
-      department: form.department,
-      name: form.name,
-      company: form.company,
-      email: form.email,
-      phone: form.phone,
-      subject: form.subject,
-      message: form.message,
-      privacy_accepted: true,
-    });
-    setLoading(false);
-    setSent(true);
-    toast({ title: 'Message sent', description: 'The chamber secretariat has received your enquiry.' });
   };
 
   return (
@@ -124,7 +88,7 @@ export const ContactPage: React.FC = () => {
       <PageHeader
         eyebrow="Contact"
         title="Contact the Chamber"
-        description="Reach the secretariat, membership team, events unit or policy department."
+        description="Send an enquiry to the MNCCI team."
         breadcrumbs={[{ label: 'Contact' }]}
       />
       <Container className="py-14">
@@ -132,6 +96,10 @@ export const ContactPage: React.FC = () => {
           <div className="lg:col-span-7">
             <Card className="p-7">
               <h2 className="text-xl font-semibold text-ink">Send a message</h2>
+              <div className="mt-4 rounded-lg border border-brand/20 bg-brand-light p-4 text-[14px] leading-relaxed text-ink-soft">
+                <strong className="font-semibold text-ink">Online enquiries are under development.</strong>{' '}
+                Please use the confirmed phone number or email address shown on this page.
+              </div>
               {sent ? (
                 <div className="mt-5 rounded-md border border-chamber-green/30 bg-chamber-green-light p-5">
                   <h3 className="text-[16px] font-semibold text-chamber-green-dark">Thank you — message received</h3>
@@ -181,7 +149,7 @@ export const ContactPage: React.FC = () => {
                     </div>
                     <div>
                       <FieldLabel htmlFor="c-phone">Phone number (optional)</FieldLabel>
-                      <input id="c-phone" type="tel" className={inputClass} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+960 000 0000" />
+                      <input id="c-phone" type="tel" className={inputClass} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                     </div>
                   </div>
                   <div>
@@ -210,51 +178,26 @@ export const ContactPage: React.FC = () => {
                         className="mt-0.5 h-4 w-4 rounded border-surface-border text-brand focus:ring-brand"
                         aria-invalid={Boolean(errors.privacy)}
                       />
-                      <span>
-                        I accept the <Link to="/privacy" className="text-brand underline">privacy policy</Link> and consent to the chamber storing this enquiry.
-                      </span>
+                      <span>I consent to the chamber storing this enquiry so it can respond.</span>
                     </label>
                     <FieldError message={errors.privacy} />
                   </div>
-                  <Button type="submit" loading={loading}>Send message</Button>
+                  <Button type="submit" loading={loading} disabled>Online submission not yet enabled</Button>
                 </form>
               )}
             </Card>
           </div>
-          <aside className="space-y-4 lg:col-span-5">
+          <aside className="lg:col-span-5">
             <Card className="p-6">
-              <h2 className="text-[15px] font-semibold text-ink">Chamber office</h2>
-              <ul className="mt-4 space-y-3 text-[14px] text-ink-soft">
-                <li className="flex gap-2.5"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />{siteConfig.address}</li>
-                <li className="flex gap-2.5"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />{siteConfig.phone}</li>
-                <li className="flex gap-2.5"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />{siteConfig.officeHours}</li>
-              </ul>
-              <h3 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-muted">Direct email</h3>
-              <ul className="mt-3 space-y-2 text-[14px]">
-                {[
-                  ['General', siteConfig.generalEmail],
-                  ['Membership', siteConfig.membershipEmail],
-                  ['Events', siteConfig.eventsEmail],
-                  ['Policy', siteConfig.policyEmail],
-                ].map(([label, email]) => (
-                  <li key={label} className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-ink-muted" aria-hidden="true" />
-                    <span className="text-ink-muted">{label}:</span>
-                    <a href={`mailto:${email}`} className="text-brand hover:underline">{email}</a>
-                  </li>
-                ))}
+              <h2 className="text-[17px] font-semibold text-ink">MNCCI office</h2>
+              <ul className="mt-5 space-y-4 text-[14px] leading-relaxed text-ink-soft">
+                <li className="flex gap-3"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" /><span>{siteConfig.address}</span></li>
+                <li className="flex gap-3"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" /><a href={`tel:${siteConfig.phone}`} className="hover:underline">{siteConfig.phone}</a></li>
+                <li className="flex gap-3"><Printer className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" /><span>Fax: {siteConfig.fax}</span></li>
+                <li className="flex gap-3"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" /><a href={`mailto:${siteConfig.generalEmail}`} className="text-brand hover:underline">{siteConfig.generalEmail}</a></li>
+                <li className="flex gap-3"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" /><span>{siteConfig.officeHours}</span></li>
               </ul>
             </Card>
-            <Card className="overflow-hidden">
-              <div className="flex h-56 items-center justify-center bg-gradient-to-br from-brand-deep to-brand text-center">
-                <div>
-                  <MapPin className="mx-auto h-8 w-8 text-white/70" aria-hidden="true" />
-                  <p className="mt-2 text-[13px] text-white/80">Map placeholder</p>
-                  <p className="text-[11px] text-white/60">Office location to be confirmed</p>
-                </div>
-              </div>
-            </Card>
-            <DemoNotice />
           </aside>
         </div>
       </Container>
@@ -266,7 +209,7 @@ export const SearchPage: React.FC = () => {
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
   const [term, setTerm] = useState(q);
-  usePageMeta('Search', 'Search the MCCI website.');
+  usePageMeta('Search', 'Search the MNCCI website.');
   const { data: results = [], isLoading } = useQuery({
     queryKey: ['search', q],
     queryFn: () => dataProvider.search(q),
@@ -335,7 +278,7 @@ const LegalPage: React.FC<{ title: string; crumb: string; sections: { heading: s
   crumb,
   sections,
 }) => {
-  usePageMeta(title, `${title} for the MCCI digital platform.`);
+  usePageMeta(title, `${title} for the MNCCI digital platform.`);
   return (
     <>
       <PageHeader eyebrow="Legal" title={title} breadcrumbs={[{ label: crumb }]} />

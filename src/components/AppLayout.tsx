@@ -1,44 +1,42 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import {
   ArrowRight,
   BadgeCheck,
-  BookOpen,
-  Building2,
   CalendarDays,
-  Cpu,
-  Fish,
   Globe2,
   Handshake,
-  HardHat,
+  Mail,
   Newspaper,
-  Palmtree,
+  Phone,
   Scale,
-  Ship,
   Sprout,
   Users,
+  Wrench,
 } from 'lucide-react';
 import {
   Badge,
   ButtonLink,
   Card,
   Container,
-  DemoBadge,
   Logo,
   SectionHeading,
-  StatBlock,
   buttonClass,
 } from '@/components/common/ui';
-import { NewsletterForm } from '@/components/layout/Footer';
 import { usePageMeta } from '@/components/layout/PublicLayout';
-import { dataProvider } from '@/lib/data/provider';
 import { LOGO_URL, siteConfig } from '@/lib/config';
-import { formatCurrency, formatDate, isUpcoming } from '@/lib/utils/format';
-import { membershipTiers } from '@/data/mockSeed';
+import { formatDate } from '@/lib/utils/format';
+import { membershipTiers, newsPosts, partners } from '@/data/mockSeed';
 
-const councilIcons: Record<string, React.ElementType> = { Cpu, Palmtree, HardHat, Fish, Ship };
-const statAccentClasses = ['bg-cyan-300', 'bg-emerald-300', 'bg-amber-300', 'bg-fuchsia-300'];
+const UnderDevelopmentPanel: React.FC<{ text: string; className?: string }> = ({ text, className }) => (
+  <Card className={`flex min-h-44 flex-col items-center justify-center p-8 text-center ${className ?? ''}`}>
+    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-light text-brand">
+      <Wrench className="h-5 w-5" aria-hidden="true" />
+    </span>
+    <h3 className="mt-4 text-[18px] font-semibold text-ink">Under Development</h3>
+    <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-ink-soft">{text}</p>
+  </Card>
+);
 
 const HeroPattern: React.FC = () => (
   <svg
@@ -88,20 +86,10 @@ const HeroPattern: React.FC = () => (
  * Header, footer and the demo-mode badge are supplied by PublicLayout.
  */
 const AppLayout: React.FC = () => {
-  usePageMeta('Advancing Maldivian Enterprise', siteConfig.defaultSeoDescription);
+  usePageMeta('Promoting commerce and public welfare', siteConfig.defaultSeoDescription);
 
-  const { data: councils = [] } = useQuery({ queryKey: ['councils'], queryFn: () => dataProvider.councils() });
-  const { data: news = [] } = useQuery({ queryKey: ['news'], queryFn: () => dataProvider.news() });
-  const { data: events = [] } = useQuery({ queryKey: ['events'], queryFn: () => dataProvider.events() });
-  const { data: policy = [] } = useQuery({ queryKey: ['policy'], queryFn: () => dataProvider.policyItems() });
-  const { data: publications = [] } = useQuery({ queryKey: ['publications'], queryFn: () => dataProvider.publications() });
-  const { data: msme = [] } = useQuery({ queryKey: ['msme'], queryFn: () => dataProvider.msmePrograms() });
-  const { data: partners = [] } = useQuery({ queryKey: ['partners'], queryFn: () => dataProvider.partners() });
-
-  const upcoming = events.filter((e) => isUpcoming(e.starts_at)).slice(0, 3);
-  const featuredNews = news[0];
-  const otherNews = news.slice(1, 4);
-  const featuredPublication = publications.find((p) => p.featured) ?? publications[0];
+  const featuredNews = newsPosts[0];
+  const otherNews = newsPosts.slice(1, 4);
 
   return (
     <>
@@ -117,20 +105,20 @@ const AppLayout: React.FC = () => {
             <div className="lg:col-span-7">
               <span className="hero-rise inline-flex items-center gap-2 rounded-full border border-cyan-100/25 bg-white/10 px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-cyan-50 backdrop-blur-sm">
                 <Globe2 className="h-3.5 w-3.5" aria-hidden="true" />
-                National business representation
+                Maldives National Chamber of Commerce &amp; Industry
               </span>
               <h1 className="hero-rise hero-delay-1 mt-6 text-[40px] font-semibold leading-[1.05] tracking-[-0.025em] sm:text-[54px] lg:text-[62px]">
-                Advancing
+                Promoting commerce
                 <span className="block bg-gradient-to-r from-white via-cyan-100 to-emerald-200 bg-clip-text text-transparent">
-                  Maldivian Enterprise
+                  and public welfare
                 </span>
               </h1>
               <p className="hero-rise hero-delay-2 mt-5 max-w-xl text-[17px] leading-relaxed text-white/78 sm:text-[18px]">
-                Representing business, strengthening industries and building a more competitive Maldives.
+                Supporting commerce, industry, trade and business connections in the Maldives.
               </p>
               <div className="hero-rise hero-delay-3 mt-8 flex flex-wrap gap-3">
                 <Link to="/membership/apply" className={buttonClass('secondary', 'rounded-full px-6 py-3 text-[15px] shadow-[0_12px_30px_rgba(15,97,67,0.28)]')}>
-                  Become a Member
+                  View membership application
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
                 <Link
@@ -140,21 +128,16 @@ const AppLayout: React.FC = () => {
                     'rounded-full border-white/25 bg-white/10 px-6 py-3 text-[15px] text-white backdrop-blur-sm hover:border-white/40 hover:bg-white/20',
                   )}
                 >
-                  Explore MCCI
+                  Explore MNCCI
                 </Link>
               </div>
-              <dl className="hero-rise hero-delay-4 mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {siteConfig.stats.map((stat, index) => (
-                  <div key={stat.label} className="group relative overflow-hidden rounded-xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-sm transition-transform hover:-translate-y-1">
-                    <span className={`absolute inset-x-0 top-0 h-0.5 ${statAccentClasses[index % statAccentClasses.length]}`} aria-hidden="true" />
-                    <dt className="sr-only">{stat.label}</dt>
-                    <dd>
-                      <span className="block font-mono text-2xl font-semibold tabular-nums text-white">{stat.value}</span>
-                      <span className="mt-1 block text-[12px] text-white/70">{stat.label}</span>
-                    </dd>
+              <div className="hero-rise hero-delay-4 mt-12 grid gap-3 sm:grid-cols-3">
+                {['Business information', 'Trade connections', 'Member engagement'].map((label) => (
+                  <div key={label} className="rounded-xl border border-white/15 bg-white/[0.07] p-4 text-[13px] font-medium text-white/80 backdrop-blur-sm">
+                    {label}
                   </div>
                 ))}
-              </dl>
+              </div>
             </div>
 
             <div className="hero-rise hero-delay-2 lg:col-span-5">
@@ -171,15 +154,14 @@ const AppLayout: React.FC = () => {
                   />
                 </div>
                 <p className="mt-6 text-center text-[13px] leading-relaxed text-white/75">
-                  The chamber convenes business across five industry councils, 26 atolls and every major sector of the
-                  national economy.
+                  An independent, membership-driven organisation supporting commerce and industry in the Maldives.
                 </p>
                 <Link
-                  to="/directory/members"
+                  to="/membership"
                   className="relative mt-5 flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.04] py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/10"
                 >
                   <Users className="h-4 w-4" aria-hidden="true" />
-                  Browse the member directory
+                  Explore membership
                 </Link>
               </div>
             </div>
@@ -194,17 +176,15 @@ const AppLayout: React.FC = () => {
             <div className="lg:col-span-7">
               <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-brand">The chamber</p>
               <h2 className="text-2xl font-semibold leading-tight text-ink sm:text-[34px]">
-                The national voice of Maldivian business
+                Supporting commerce and industry
               </h2>
               <p className="mt-5 text-[16px] leading-relaxed text-ink-soft">
-                The Maldives National Chamber of Commerce &amp; Industry brings together enterprises of every size — from
-                island guesthouses and family trading businesses to national contractors, financial institutions and
-                technology firms. The chamber represents their interests in national policy, connects them to markets and
-                partners, and builds the capability of the private sector.
+                The Maldives National Chamber of Commerce &amp; Industry is an independent, membership-driven organisation
+                that promotes commerce and industry and supports trade, business and public welfare.
               </p>
               <p className="mt-4 text-[16px] leading-relaxed text-ink-soft">
-                Our work is delivered through industry councils, structured policy engagement, research and a year-round
-                programme of forums, training and business services.
+                MNCCI provides business information, creates opportunities for commercial connections and maintains
+                relationships with local and international organisations.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <ButtonLink to="/about" variant="outline">About the chamber</ButtonLink>
@@ -217,10 +197,10 @@ const AppLayout: React.FC = () => {
             <div className="lg:col-span-5">
               <div className="grid gap-3 sm:grid-cols-2">
                 {[
-                  { icon: Scale, title: 'Advocacy', text: 'Evidence-based representation to government and regulators.' },
-                  { icon: Users, title: 'Councils', text: 'Five industry councils driving sector-specific work.' },
-                  { icon: Globe2, title: 'Trade', text: 'Market access, documentation and international linkages.' },
-                  { icon: Sprout, title: 'MSME support', text: 'Programmes for micro, small and medium enterprises.' },
+                  { icon: Scale, title: 'Representation', text: 'A platform for business views and engagement.' },
+                  { icon: Users, title: 'Membership', text: 'Connections with members and business leaders.' },
+                  { icon: Globe2, title: 'Trade', text: 'Links with local and international business groups.' },
+                  { icon: Sprout, title: 'Enterprise', text: 'Information and opportunities supporting business activity.' },
                 ].map(({ icon: Icon, title, text }) => (
                   <Card key={title} className="p-5 hover:-translate-y-0.5 hover:shadow-md">
                     <Icon className="h-5 w-5 text-brand" aria-hidden="true" />
@@ -239,31 +219,11 @@ const AppLayout: React.FC = () => {
         <Container>
           <SectionHeading
             eyebrow="Industry councils"
-            title="Sector leadership across the economy"
-            description="Councils convene members within a sector to set priorities, shape policy positions and deliver practical programmes."
+            title="Industry council information"
+            description="The council structure remains part of MNCCI, while current council names and details are being confirmed."
             action={<ButtonLink to="/councils" variant="outline">All councils</ButtonLink>}
           />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {councils.map((council) => {
-              const Icon = councilIcons[council.icon_name] ?? Building2;
-              return (
-                <Link
-                  key={council.id}
-                  to={`/councils/${council.slug}`}
-                  className="group rounded-lg border border-surface-border bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-brand-light text-brand">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </span>
-                  <h3 className="mt-4 text-[16px] font-semibold text-ink group-hover:text-brand-deep">{council.name}</h3>
-                  <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-ink-soft">{council.short_description}</p>
-                  <p className="mt-4 font-mono text-[11px] uppercase tracking-wider text-ink-muted">
-                    {council.member_count_display} participating members
-                  </p>
-                </Link>
-              );
-            })}
-          </div>
+          <UnderDevelopmentPanel text="Council names, leadership and current programme details are being updated." />
         </Container>
       </section>
 
@@ -289,7 +249,6 @@ const AppLayout: React.FC = () => {
                     <time dateTime={featuredNews.published_at}>{formatDate(featuredNews.published_at)}</time>
                     <span>·</span>
                     <span>{featuredNews.author_display_name}</span>
-                    {featuredNews.is_demo && <DemoBadge />}
                   </div>
                   <h3 className="mt-3 text-[22px] font-semibold leading-snug text-ink">
                     <Link to={`/news/${featuredNews.slug}`} className="hover:text-brand">{featuredNews.title}</Link>
@@ -330,37 +289,10 @@ const AppLayout: React.FC = () => {
           <SectionHeading
             eyebrow="Events"
             title="Upcoming engagement"
-            description="Forums, briefings, training and council sessions across the national business calendar."
+            description="The current MNCCI events programme is being prepared for publication."
             action={<ButtonLink to="/events" variant="outline">Events calendar</ButtonLink>}
           />
-          <div className="grid gap-4 md:grid-cols-3">
-            {upcoming.map((event) => (
-              <Card key={event.id} className="flex flex-col p-5 hover:-translate-y-0.5 hover:shadow-md">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="rounded-md border border-surface-border bg-surface-page px-3 py-2 text-center">
-                    <span className="block font-mono text-lg font-semibold leading-none text-brand-deep">
-                      {formatDate(event.starts_at, 'dd')}
-                    </span>
-                    <span className="mt-1 block font-mono text-[10px] uppercase tracking-wider text-ink-muted">
-                      {formatDate(event.starts_at, 'MMM yyyy')}
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5">
-                    <Badge status="published" label={event.event_type} />
-                    {event.member_only && <Badge status="info" label="Members only" />}
-                  </div>
-                </div>
-                <h3 className="mt-4 text-[16px] font-semibold leading-snug text-ink">
-                  <Link to={`/events/${event.slug}`} className="hover:text-brand">{event.title}</Link>
-                </h3>
-                <p className="mt-2 line-clamp-2 flex-1 text-[13.5px] leading-relaxed text-ink-soft">{event.summary}</p>
-                <div className="mt-4 flex items-center justify-between border-t border-surface-border pt-4 text-[12px] text-ink-muted">
-                  <span>{event.island}</span>
-                  <span className="font-mono">{event.fee > 0 ? formatCurrency(event.fee) : 'No fee'}</span>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <UnderDevelopmentPanel text="Approved event dates, venues and registration information will appear here." />
         </Container>
       </section>
 
@@ -369,9 +301,9 @@ const AppLayout: React.FC = () => {
         <Container>
           <SectionHeading
             eyebrow="Membership"
-            title="What membership delivers"
-            description="Four membership categories designed for businesses at different stages of growth."
-            action={<ButtonLink to="/membership/tiers" variant="outline">Compare tiers</ButtonLink>}
+            title="Proposed membership tiers"
+            description="These proposed categories and prices are subject to approval through an AGM."
+            action={<ButtonLink to="/membership/tiers" variant="outline">View tier details</ButtonLink>}
           />
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {membershipTiers.map((tier) => (
@@ -383,18 +315,9 @@ const AppLayout: React.FC = () => {
                 <p className="mt-3 font-mono text-2xl font-semibold tabular-nums text-brand-deep">
                   {tier.currency} {tier.annual_fee.toLocaleString()}
                 </p>
-                <p className="font-mono text-[11px] uppercase tracking-wider text-ink-muted">per year · demo value</p>
-                <p className="mt-3 flex-1 text-[13.5px] leading-relaxed text-ink-soft">{tier.description}</p>
-                <ul className="mt-4 space-y-1.5 text-[13px] text-ink-soft">
-                  {tier.benefits.slice(0, 3).map((benefit) => (
-                    <li key={benefit} className="flex gap-2">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-chamber-green" aria-hidden="true" />
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
+                <p className="font-mono text-[11px] uppercase tracking-wider text-ink-muted">proposed annual price</p>
                 <Link to="/membership/apply" className={buttonClass('outline', 'mt-5 w-full')}>
-                  Apply for {tier.name}
+                  View application
                 </Link>
               </Card>
             ))}
@@ -407,37 +330,11 @@ const AppLayout: React.FC = () => {
         <Container>
           <SectionHeading
             eyebrow="Policy & advocacy"
-            title="Advocacy tracker"
-            description="Live view of the chamber's demonstration policy positions and their engagement progress."
+            title="Policy & advocacy"
+            description="Current policy positions and submissions are being reviewed before publication."
             action={<ButtonLink to="/policy" variant="outline">Policy priorities</ButtonLink>}
           />
-          <Card className="divide-y divide-surface-border">
-            {policy.map((item) => (
-              <div key={item.id} className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-ink-muted">
-                      {item.reference_number}
-                    </span>
-                    <Badge status="info" label={item.position_status} />
-                  </div>
-                  <h3 className="mt-1.5 text-[15.5px] font-semibold text-ink">
-                    <Link to={`/policy/positions/${item.slug}`} className="hover:text-brand">{item.title}</Link>
-                  </h3>
-                  <p className="mt-1 text-[13px] text-ink-soft">{item.category}</p>
-                </div>
-                <div className="w-full sm:w-64">
-                  <div className="flex items-center justify-between text-[11px] font-medium text-ink-soft">
-                    <span>Engagement progress</span>
-                    <span className="font-mono tabular-nums">{item.progress_percent}%</span>
-                  </div>
-                  <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-surface-page">
-                    <div className="h-full rounded-full bg-chamber-green transition-all" style={{ width: `${item.progress_percent}%` }} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </Card>
+          <UnderDevelopmentPanel text="Approved policy priorities, positions and submissions will be published here." />
         </Container>
       </section>
 
@@ -447,28 +344,7 @@ const AppLayout: React.FC = () => {
           <div className="grid gap-8 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <SectionHeading eyebrow="Publications" title="Featured publication" className="mb-6" />
-              {featuredPublication && (
-                <Card className="overflow-hidden">
-                  <div className="flex h-40 items-center justify-center bg-gradient-to-br from-brand-deep to-brand">
-                    <BookOpen className="h-10 w-10 text-white/70" aria-hidden="true" />
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-2">
-                      <Badge status="published" label="Annual report" />
-                      <DemoBadge />
-                    </div>
-                    <h3 className="mt-3 text-[19px] font-semibold text-ink">{featuredPublication.title}</h3>
-                    <p className="mt-2 text-[14px] leading-relaxed text-ink-soft">{featuredPublication.summary}</p>
-                    <div className="mt-4 flex items-center gap-4 font-mono text-[11px] uppercase tracking-wider text-ink-muted">
-                      <span>{formatDate(featuredPublication.published_at)}</span>
-                      <span>{featuredPublication.page_count} pages</span>
-                    </div>
-                    <Link to={`/publications/${featuredPublication.slug}`} className={buttonClass('outline', 'mt-5 w-full')}>
-                      View publication
-                    </Link>
-                  </div>
-                </Card>
-              )}
+              <UnderDevelopmentPanel text="Approved publications and annual reports are being prepared for this section." className="min-h-72" />
             </div>
             <div className="lg:col-span-7">
               <SectionHeading
@@ -477,18 +353,7 @@ const AppLayout: React.FC = () => {
                 action={<ButtonLink to="/msme/programs" variant="outline">All programmes</ButtonLink>}
                 className="mb-6"
               />
-              <div className="grid gap-4 sm:grid-cols-2">
-                {msme.slice(0, 4).map((program) => (
-                  <Card key={program.id} className="p-5 hover:-translate-y-0.5 hover:shadow-md">
-                    <Sprout className="h-5 w-5 text-chamber-green" aria-hidden="true" />
-                    <h3 className="mt-3 text-[15px] font-semibold text-ink">{program.title}</h3>
-                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-ink-soft">{program.summary}</p>
-                    <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-muted">
-                      Applications close {formatDate(program.deadline)}
-                    </p>
-                  </Card>
-                ))}
-              </div>
+              <UnderDevelopmentPanel text="Current MNCCI programmes and application information are being updated." className="min-h-72" />
             </div>
           </div>
         </Container>
@@ -498,12 +363,12 @@ const AppLayout: React.FC = () => {
       <section className="py-16">
         <Container>
           <SectionHeading
-            eyebrow="Partners"
-            title="Patron and strategic partners"
-            description="Placeholder partner records. No third-party logos are used until written permission is confirmed."
-            action={<ButtonLink to="/partners" variant="outline">Partner programme</ButtonLink>}
+            eyebrow="Affiliations"
+            title="Affiliations & partners"
+            description="Publicly identified international affiliations and technology partnership."
+            action={<ButtonLink to="/partners" variant="outline">View affiliations</ButtonLink>}
           />
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid gap-3 sm:grid-cols-3">
             {partners.map((partner) => (
               <Card key={partner.id} className="flex flex-col items-center justify-center gap-2 p-6 text-center">
                 <Handshake className="h-6 w-6 text-brand" aria-hidden="true" />
@@ -521,14 +386,13 @@ const AppLayout: React.FC = () => {
           <div className="grid gap-10 lg:grid-cols-12">
             <div className="lg:col-span-6">
               <Logo variant="light" showText={false} />
-              <h2 className="mt-6 text-[30px] font-semibold leading-tight">Join the national conversation on business</h2>
+              <h2 className="mt-6 text-[30px] font-semibold leading-tight">Connect with MNCCI</h2>
               <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/75">
-                Membership connects your business to policy makers, industry peers and practical support. Speak with the
-                membership team or start an application online.
+                Learn about membership or contact the chamber using the confirmed public details.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link to="/membership/apply" className={buttonClass('secondary', 'px-6 py-3')}>
-                  Start an application
+                  Review application steps
                 </Link>
                 <Link
                   to="/contact"
@@ -537,25 +401,22 @@ const AppLayout: React.FC = () => {
                   Contact the secretariat
                 </Link>
               </div>
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <StatBlock light value="5" label="Industry councils" />
-                <StatBlock light value="26" label="Atolls represented" note="Demo value" />
-                <StatBlock light value="30+" label="Years of service" note="Demo value" />
-              </div>
             </div>
             <div className="lg:col-span-6">
               <div className="rounded-xl bg-white p-7 text-ink shadow-xl">
                 <div className="mb-1 flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-brand" aria-hidden="true" />
                   <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">
-                    Business bulletin
+                    Contact details
                   </span>
                 </div>
-                <h3 className="text-[20px] font-semibold text-ink">Stay informed</h3>
-                <p className="mb-5 mt-1 text-[13.5px] text-ink-soft">
-                  Policy updates, event invitations and member notices delivered to your inbox.
-                </p>
-                <NewsletterForm source="homepage-newsletter" />
+                <h3 className="text-[20px] font-semibold text-ink">MNCCI office</h3>
+                <div className="mt-5 space-y-4 text-[14px] text-ink-soft">
+                  <p className="flex gap-3"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" /><a href={`tel:${siteConfig.phone}`} className="hover:underline">{siteConfig.phone}</a></p>
+                  <p className="flex gap-3"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" /><a href={`mailto:${siteConfig.generalEmail}`} className="hover:underline">{siteConfig.generalEmail}</a></p>
+                  <p>{siteConfig.address}</p>
+                  <p>{siteConfig.officeHours}</p>
+                </div>
               </div>
             </div>
           </div>

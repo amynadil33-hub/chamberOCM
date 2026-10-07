@@ -129,7 +129,7 @@ export const LoginPage: React.FC = () => {
       return;
     }
     setError('');
-    toast({ title: 'Signed in', description: 'Welcome back to the MCCI platform.' });
+    toast({ title: 'Signed in', description: 'Welcome back to the MNCCI platform.' });
     const isAdminAccount = email.startsWith('admin') || email.startsWith('editor');
     navigate(from ?? (isAdminAccount ? '/admin' : '/portal'), { replace: true });
   };

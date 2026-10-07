@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, LogOut, Menu, Search, ShieldCheck, User, X } from 'lucide-react';
 import { Container, Logo, buttonClass } from '@/components/common/ui';
 import { publicNav } from '@/lib/navigation';
-import { isMockMode } from '@/lib/config';
+import { isMockMode, publicContentVisibility } from '@/lib/config';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +36,7 @@ const Header: React.FC = () => {
       <div className="h-0.5 bg-gradient-to-r from-brand via-cyan-500 to-chamber-green" aria-hidden="true" />
       <div>
         <Container className="flex h-[72px] items-center justify-between gap-4">
-          <Link to="/" className="rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="MCCI home">
+          <Link to="/" className="rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand" aria-label="MNCCI home">
             <Logo />
           </Link>
 
@@ -96,7 +96,7 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-1.5">
-            <button
+            {publicContentVisibility.siteSearch && <button
               type="button"
               onClick={() => setSearchOpen((s) => !s)}
               aria-label="Open search"
@@ -104,7 +104,7 @@ const Header: React.FC = () => {
               className="rounded-full p-2.5 text-ink-soft transition-colors hover:bg-brand-light hover:text-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               <Search className="h-[18px] w-[18px]" aria-hidden="true" />
-            </button>
+            </button>}
 
             {user ? (
               <div className="hidden items-center gap-2 sm:flex">
@@ -134,7 +134,7 @@ const Header: React.FC = () => {
                   Member login
                 </Link>
                 <Link to="/membership/apply" className={buttonClass('primary', 'rounded-full px-4 py-2 shadow-sm')}>
-                  Join MCCI
+                  Join MNCCI
                 </Link>
               </div>
             )}
@@ -150,18 +150,18 @@ const Header: React.FC = () => {
           </div>
         </Container>
 
-        {searchOpen && (
+        {publicContentVisibility.siteSearch && searchOpen && (
           <div className="border-t border-surface-border bg-white/95">
             <Container className="py-3">
               <form onSubmit={submitSearch} role="search" className="flex gap-2">
                 <label htmlFor="site-search" className="sr-only">
-                  Search the MCCI website
+                  Search the MNCCI website
                 </label>
                 <input
                   id="site-search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search news, events, councils, publications, members…"
+                  placeholder="Search the MNCCI website"
                   className="w-full rounded-md border border-surface-border px-3 py-2.5 text-[15px] focus:border-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
                   autoFocus
                 />
@@ -259,7 +259,7 @@ const Header: React.FC = () => {
               ) : (
                 <>
                   <Link to="/membership/apply" className={buttonClass('primary', 'w-full')}>
-                    Join MCCI
+                    Join MNCCI
                   </Link>
                   <Link to="/auth/login" className={buttonClass('outline', 'w-full')}>
                     Member login

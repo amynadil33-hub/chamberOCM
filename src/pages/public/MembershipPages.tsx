@@ -3,16 +3,12 @@ import { Link } from 'react-router-dom';
 import {
   BadgeCheck,
   CalendarClock,
-  FileCheck2,
   Globe2,
-  GraduationCap,
   Handshake,
-  Megaphone,
   Scale,
   Users,
 } from 'lucide-react';
 import {
-  Badge,
   ButtonLink,
   Card,
   Container,
@@ -25,50 +21,28 @@ import { membershipTiers } from '@/data/mockSeed';
 import { formatCurrency } from '@/lib/utils/format';
 
 const benefits = [
-  { icon: Scale, title: 'Policy representation', text: 'Your sector issues carried into national policy discussion through the councils.' },
-  { icon: Users, title: 'Industry councils', text: 'A seat in the council that matches your sector and business priorities.' },
-  { icon: Globe2, title: 'Trade & market access', text: 'Documentation support, trade missions and international chamber links.' },
-  { icon: GraduationCap, title: 'Training & capability', text: 'Member rates on workshops, certification pathways and business clinics.' },
-  { icon: Megaphone, title: 'Visibility', text: 'Public directory listing, event platforms and chamber communications.' },
-  { icon: Handshake, title: 'Business networking', text: 'Structured introductions, forums and sector networking events.' },
-  { icon: FileCheck2, title: 'Advisory support', text: 'Guidance on compliance, registration and business processes.' },
-  { icon: CalendarClock, title: 'Early information', text: 'Advance notice of consultations, tenders and policy changes.' },
-];
-
-const processSteps = [
-  { step: '01', title: 'Choose your tier', text: 'Select the membership category that matches your business size and objectives.' },
-  { step: '02', title: 'Complete the application', text: 'Provide business, contact and council preference details online.' },
-  { step: '03', title: 'Upload documents', text: 'Attach registration certificate, director list and signatory identification.' },
-  { step: '04', title: 'Chamber review', text: 'The membership team reviews the application and may request further information.' },
-  { step: '05', title: 'Approval & payment', text: 'Once the chamber approves the application, payment is unlocked in the applicant portal.' },
-  { step: '06', title: 'Activation & certificate', text: 'Successful payment activates membership and issues a digital membership certificate.' },
-];
-
-const faqs = [
-  { q: 'Who can apply for membership?', a: 'Any business registered in the Maldives may apply. Eligibility criteria are confirmed during review.' },
-  { q: 'How long does review take?', a: 'Review timelines will be confirmed by the secretariat. Applicants can track status in the member portal.' },
-  { q: 'Can I join more than one council?', a: 'Council participation depends on the membership tier. Corporate and Patron members may join multiple councils.' },
-  { q: 'How are fees paid?', a: 'The first version supports manual bank transfer with reference verification by the membership team.' },
-  { q: 'Is my information public?', a: 'Only fields you mark as public appear in the member directory. Documents are never public.' },
-  { q: 'When does membership renew?', a: 'Membership runs annually. Renewal invoices are issued ahead of the expiry date.' },
+  { icon: Scale, title: 'Business representation', text: 'Opportunities for member views and concerns to be heard in government consultation.' },
+  { icon: Users, title: 'Business connections', text: 'Access to business leaders, government officials and other members.' },
+  { icon: Globe2, title: 'International links', text: 'Connections with local and international business groups and foreign chambers.' },
+  { icon: Handshake, title: 'Events and delegations', text: 'Invitations to seminars, workshops, dialogue sessions and meetings with trade delegations.' },
 ];
 
 export const MembershipPage: React.FC = () => {
-  usePageMeta('Membership', 'Why businesses join MCCI and how to apply.');
+  usePageMeta('Membership', 'Why businesses join MNCCI and how to apply.');
   return (
     <>
       <PageHeader
         eyebrow="Membership"
         title="Membership of the Chamber"
-        description="Membership connects your business to national policy, industry peers and practical support — across every atoll and every major sector."
+        description="Membership is open to people and organisations engaged in commerce, industry, banking, trade development and trade-related services."
         breadcrumbs={[{ label: 'Membership' }]}
       >
         <div className="flex flex-wrap gap-3">
           <Link to="/membership/apply" className="rounded-md bg-chamber-green px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-chamber-green-dark">
-            Apply for membership
+            Review application steps
           </Link>
           <Link to="/membership/tiers" className="rounded-md border border-white/25 bg-white/10 px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-white/20">
-            Compare tiers
+            View proposed tiers
           </Link>
         </div>
       </PageHeader>
@@ -85,27 +59,16 @@ export const MembershipPage: React.FC = () => {
           ))}
         </div>
 
-        <SectionHeading className="mt-16" eyebrow="Process" title="How to apply" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {processSteps.map((step) => (
-            <Card key={step.step} className="p-6">
-              <span className="font-mono text-[13px] font-semibold text-brand">{step.step}</span>
-              <h3 className="mt-2 text-[16px] font-semibold text-ink">{step.title}</h3>
-              <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-soft">{step.text}</p>
-            </Card>
-          ))}
-        </div>
-
-        <SectionHeading className="mt-16" eyebrow="Requirements" title="Eligibility and documents" />
-        <div className="grid gap-6 lg:grid-cols-2">
+        <SectionHeading className="mt-16" eyebrow="Eligibility" title="Who can apply" />
+        <div className="grid gap-6">
           <Card className="p-6">
             <h3 className="text-[16px] font-semibold text-ink">Eligibility</h3>
             <ul className="mt-3 space-y-2 text-[14px] text-ink-soft">
               {[
-                'A business registered in the Republic of Maldives',
-                'Valid company or sole trader registration',
-                'Named authorised representative for chamber correspondence',
-                'Acceptance of the chamber declaration and privacy terms',
+                'People and organisations engaged in commercial activities or operating factories',
+                'Industrialists, bankers and those involved in developing trade',
+                'People and organisations associated with trade or providing trade-related services',
+                'Applicants who accept MNCCI’s Articles of Association and administrative procedure',
               ].map((item) => (
                 <li key={item} className="flex gap-2">
                   <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-chamber-green" aria-hidden="true" />
@@ -114,40 +77,7 @@ export const MembershipPage: React.FC = () => {
               ))}
             </ul>
           </Card>
-          <Card className="p-6">
-            <h3 className="text-[16px] font-semibold text-ink">Documents</h3>
-            <p className="mt-2 text-[13px] text-ink-muted">Required</p>
-            <ul className="mt-2 space-y-2 text-[14px] text-ink-soft">
-              {['Business registration certificate', 'Director / shareholder list', 'Authorised signatory identification copy'].map((doc) => (
-                <li key={doc} className="flex gap-2">
-                  <FileCheck2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" />
-                  {doc}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 text-[13px] text-ink-muted">Optional</p>
-            <ul className="mt-2 space-y-2 text-[14px] text-ink-soft">
-              {['Company profile', 'Latest audited accounts', 'GST / BPT registration'].map((doc) => (
-                <li key={doc} className="flex gap-2">
-                  <FileCheck2 className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
-                  {doc}
-                </li>
-              ))}
-            </ul>
-          </Card>
         </div>
-
-        <SectionHeading className="mt-16" eyebrow="Questions" title="Frequently asked questions" />
-        <div className="grid gap-4 md:grid-cols-2">
-          {faqs.map((faq) => (
-            <Card key={faq.q} className="p-6">
-              <h3 className="text-[15px] font-semibold text-ink">{faq.q}</h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-ink-soft">{faq.a}</p>
-            </Card>
-          ))}
-        </div>
-
-        <DemoNotice className="mt-12" />
       </Container>
     </>
   );
@@ -173,64 +103,36 @@ export const MembershipBenefitsPage: React.FC = () => {
             </Card>
           ))}
         </div>
-        <SectionHeading className="mt-14" eyebrow="Benefits by tier" title="What each tier includes" />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {membershipTiers.map((tier) => (
-            <Card key={tier.id} className="p-6">
-              <h3 className="text-[17px] font-semibold text-ink">{tier.name}</h3>
-              <ul className="mt-4 space-y-2 text-[13.5px] text-ink-soft">
-                {tier.benefits.map((benefit) => (
-                  <li key={benefit} className="flex gap-2">
-                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-chamber-green" aria-hidden="true" />
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          ))}
-        </div>
-        <DemoNotice className="mt-12" />
       </Container>
     </>
   );
 };
 
 export const MembershipTiersPage: React.FC = () => {
-  usePageMeta('Membership Tiers', 'Membership categories, annual fees and included benefits.');
+  usePageMeta('Proposed Membership Tiers', 'Proposed membership categories and annual prices subject to approval through an AGM.');
   return (
     <>
       <PageHeader
         eyebrow="Membership"
-        title="Membership Tiers & Fees"
-        description="Four categories designed for businesses at different stages. All fees shown are demonstration values pending official confirmation."
+        title="Proposed Membership Tiers & Prices"
+        description="These proposed categories and prices are subject to approval through an AGM."
         breadcrumbs={[{ label: 'Membership', to: '/membership' }, { label: 'Tiers' }]}
       />
       <Container className="py-14">
-        <DemoNotice className="mb-8" />
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {membershipTiers.map((tier) => (
             <Card key={tier.id} className="flex flex-col p-6 hover:-translate-y-0.5 hover:shadow-md">
               <div className="flex items-center justify-between">
                 <h2 className="text-[18px] font-semibold text-ink">{tier.name}</h2>
-                {tier.slug === 'corporate' && <Badge status="success" label="Popular" />}
               </div>
               <p className="mt-4 font-mono text-[30px] font-semibold tabular-nums leading-none text-brand-deep">
                 {formatCurrency(tier.annual_fee, tier.currency).replace('.00', '')}
               </p>
               <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-ink-muted">
-                per year · demo value
+                proposed annual price
               </p>
-              <p className="mt-4 flex-1 text-[13.5px] leading-relaxed text-ink-soft">{tier.description}</p>
-              <ul className="mt-4 space-y-2 text-[13px] text-ink-soft">
-                {tier.benefits.map((benefit) => (
-                  <li key={benefit} className="flex gap-2">
-                    <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-chamber-green" aria-hidden="true" />
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
               <ButtonLink to="/membership/apply" className="mt-6 w-full">
-                Apply for {tier.name}
+                View application
               </ButtonLink>
             </Card>
           ))}

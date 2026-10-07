@@ -1,4 +1,4 @@
-// Core domain types for the MCCI digital platform.
+// Core domain types for the MNCCI digital platform.
 // These mirror the PostgreSQL schema in /supabase/migrations.
 
 export type AppRole = 'member' | 'editor' | 'admin' | 'super_admin';
@@ -224,6 +224,7 @@ export interface NewsPost {
   content_image_alt?: string;
   content_image_position?: string;
   is_demo: boolean;
+  source_url?: string;
 }
 
 export type EventType = 'summit' | 'forum' | 'webinar' | 'exhibition' | 'training' | 'meeting';

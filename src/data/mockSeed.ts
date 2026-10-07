@@ -417,96 +417,56 @@ export const organizations: Organization[] = orgSeed.map(
   },
 );
 
+const mncciNewsSource = 'https://mncci.org.mv/news/';
+
 export const newsPosts: NewsPost[] = [
   {
-    id: 'news-1',
-    category: 'Chamber News',
-    title: 'MCCI Announces 2026 Business Engagement Calendar',
-    slug: 'mcci-announces-2026-business-engagement-calendar',
-    excerpt:
-      'The chamber has published its planned programme of forums, briefings and council consultations for the coming year.',
-    body_markdown:
-      'The chamber has published a full-year engagement calendar covering industry council meetings, policy consultations, member briefings and the annual business forum.\n\nMembers are encouraged to review the calendar and register early for sessions relevant to their sector. Council-specific sessions will be confirmed with participating members through the member portal.\n\n*This is demonstration content prepared for preview purposes.*',
-    author_display_name: 'MCCI Secretariat',
-    status: 'published',
-    featured: true,
-    published_at: '2026-01-14T09:00:00Z',
-    is_demo: true,
+    id: 'news-1', category: 'Chamber News', featured: true, status: 'published', is_demo: false,
+    title: 'Maldives – Kosovo Business Cooperation Discussed During Courtesy Meeting',
+    slug: 'maldives-kosovo-business-cooperation-courtesy-meeting',
+    excerpt: 'MNCCI met representatives from Kosovo to discuss opportunities for stronger economic and commercial cooperation.',
+    body_markdown: 'MNCCI met the Ambassador of Kosovo, Lulzim Pllana, and Guner Ureya, Director for Asia and Oceania, to discuss avenues for stronger bilateral economic and commercial relations.\n\n[Read the source on the MNCCI public portal](https://mncci.org.mv/news/).',
+    author_display_name: 'MNCCI', published_at: '2026-08-08T00:00:00Z', source_url: mncciNewsSource,
   },
   {
-    id: 'news-2',
-    category: 'Programmes',
-    title: 'Applications Open for SME Export Readiness Programme',
-    slug: 'applications-open-sme-export-readiness-programme',
-    excerpt:
-      'Small and medium enterprises can now apply for structured support covering documentation, compliance and buyer engagement.',
-    body_markdown:
-      'The programme supports small and medium enterprises preparing for their first structured export activity, covering documentation, certification pathways, costing and buyer engagement.\n\n*This is demonstration content prepared for preview purposes.*',
-    author_display_name: 'MSME Unit',
-    status: 'published',
-    featured: false,
-    published_at: '2026-01-09T09:00:00Z',
-    is_demo: true,
+    id: 'news-2', category: 'Chamber News', featured: false, status: 'published', is_demo: false,
+    title: 'Fostering Economic Ties Through Strategic Business Matchmaking',
+    slug: 'fostering-economic-ties-strategic-business-matchmaking',
+    excerpt: 'MNCCI hosted a business matchmaking meeting with a delegation from the Overseas Union of Yunnan Enterprises.',
+    body_markdown: 'The meeting brought Maldivian and Chinese business representatives together to explore commercial connections and deepen economic ties.\n\n[Read the source on the MNCCI public portal](https://mncci.org.mv/news/).',
+    author_display_name: 'MNCCI', published_at: '2026-01-30T00:00:00Z', source_url: mncciNewsSource,
   },
   {
-    id: 'news-3',
-    category: 'Councils',
-    title: 'ICT Council Hosts Digital Commerce Roundtable',
-    slug: 'ict-council-hosts-digital-commerce-roundtable',
-    excerpt:
-      'Technology businesses and payment providers met to review barriers to online trade for Maldivian businesses.',
-    body_markdown:
-      'Participants reviewed payment acceptance costs, cross-border settlement, delivery logistics and consumer protection expectations for online trade.\n\n*This is demonstration content prepared for preview purposes.*',
-    author_display_name: 'ICT Council',
-    status: 'published',
-    featured: false,
-    published_at: '2025-12-18T09:00:00Z',
-    is_demo: true,
+    id: 'news-3', category: 'Chamber News', featured: false, status: 'published', is_demo: false,
+    title: 'MNCCI and Maldives Immigration Discuss Enhanced Private Sector Cooperation',
+    slug: 'mncci-maldives-immigration-private-sector-cooperation',
+    excerpt: 'MNCCI met the Controller General of Immigration to discuss private-sector cooperation.',
+    body_markdown: 'The discussion considered opportunities for cooperation between Maldives Immigration and the private sector.\n\n[Read the source on the MNCCI public portal](https://mncci.org.mv/news/).',
+    author_display_name: 'MNCCI', published_at: '2026-01-26T00:00:00Z', source_url: mncciNewsSource,
   },
   {
-    id: 'news-4',
-    category: 'Policy',
-    title: 'Construction Council Publishes Procurement Recommendations',
-    slug: 'construction-council-publishes-procurement-recommendations',
-    excerpt:
-      'The council has set out member-endorsed recommendations on tender evaluation, payment terms and dispute resolution.',
-    body_markdown:
-      'The recommendations focus on transparent evaluation criteria, reasonable payment cycles and accessible dispute resolution for subcontractors.\n\n*This is demonstration content prepared for preview purposes.*',
-    author_display_name: 'Construction Council',
-    status: 'published',
-    featured: false,
-    published_at: '2025-12-02T09:00:00Z',
-    is_demo: true,
+    id: 'news-4', category: 'Chamber News', featured: false, status: 'published', is_demo: false,
+    title: 'MNCCI President Welcomes New Sri Lankan High Commissioner',
+    slug: 'mncci-president-welcomes-sri-lankan-high-commissioner',
+    excerpt: 'MNCCI welcomed Sri Lanka’s newly appointed High Commissioner to the Maldives.',
+    body_markdown: 'The meeting marked an early engagement with the new High Commissioner and focused on relations between Sri Lanka and the Maldives.\n\n[Read the source on the MNCCI public portal](https://mncci.org.mv/news/).',
+    author_display_name: 'MNCCI', published_at: '2025-10-06T00:00:00Z', source_url: mncciNewsSource,
   },
   {
-    id: 'news-5',
-    category: 'Councils',
-    title: 'Tourism Council Opens Sustainable Operations Consultation',
-    slug: 'tourism-council-opens-sustainable-operations-consultation',
-    excerpt:
-      'Members are invited to comment on a practical sustainability framework for small and medium properties.',
-    body_markdown:
-      'The consultation covers waste handling, energy efficiency, water management and reporting expectations proportionate to property size.\n\n*This is demonstration content prepared for preview purposes.*',
-    author_display_name: 'Tourism Council',
-    status: 'published',
-    featured: false,
-    published_at: '2025-11-20T09:00:00Z',
-    is_demo: true,
+    id: 'news-5', category: 'Chamber News', featured: false, status: 'published', is_demo: false,
+    title: 'Showcasing Opportunities at Thailand-Maldives Business Matching Forum',
+    slug: 'thailand-maldives-business-matching-forum',
+    excerpt: 'MNCCI presented investment opportunities and information for Thai businesses interested in the Maldives.',
+    body_markdown: 'MNCCI participated in the Thailand-Maldives Business Matching Forum, presenting investment opportunities and information intended to support market entry.\n\n[Read the source on the MNCCI public portal](https://mncci.org.mv/news/).',
+    author_display_name: 'MNCCI', published_at: '2024-08-19T00:00:00Z', source_url: mncciNewsSource,
   },
   {
-    id: 'news-6',
-    category: 'Chamber News',
-    title: 'MCCI Welcomes New Demonstration Member Profiles',
-    slug: 'mcci-welcomes-new-demonstration-member-profiles',
-    excerpt:
-      'Twelve placeholder business profiles have been added to preview the member directory experience.',
-    body_markdown:
-      'These profiles exist only to demonstrate the directory. They are not verified members and must be replaced before launch.\n\n*This is demonstration content prepared for preview purposes.*',
-    author_display_name: 'MCCI Secretariat',
-    status: 'published',
-    featured: false,
-    published_at: '2025-11-05T09:00:00Z',
-    is_demo: true,
+    id: 'news-6', category: 'Chamber News', featured: false, status: 'published', is_demo: false,
+    title: 'Expanding Investment: Meeting with Kunming Delegation Head',
+    slug: 'expanding-investment-kunming-delegation-head',
+    excerpt: 'MNCCI discussed investment expansion and private-sector cooperation with the head of a delegation from Kunming.',
+    body_markdown: 'The meeting considered ways to expand investment and connect businesses through private-sector cooperation.\n\n[Read the source on the MNCCI public portal](https://mncci.org.mv/news/).',
+    author_display_name: 'MNCCI', published_at: '2024-08-10T00:00:00Z', source_url: mncciNewsSource,
   },
 ];
 
@@ -744,22 +704,10 @@ export const msmePrograms: MsmeProgram[] = [
 }));
 
 export const partners: Partner[] = [
-  'Banking Partner',
-  'Telecommunications Partner',
-  'Development Partner',
-  'Education Partner',
-  'Logistics Partner',
-  'International Chamber Partner',
-].map((name, index) => ({
-  id: `partner-${index + 1}`,
-  name,
-  slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-  partner_type: index < 2 ? 'Patron partner' : 'Strategic partner',
-  website: 'https://example.test',
-  display_order: index + 1,
-  active: true,
-  is_demo: true,
-}));
+  { id: 'partner-1', name: 'International Chamber of Commerce', slug: 'international-chamber-of-commerce', partner_type: 'International affiliate', website: 'https://www.iccwbo.org', display_order: 1, active: true, is_demo: false },
+  { id: 'partner-2', name: 'Islamic Chamber of Commerce', slug: 'islamic-chamber-of-commerce', partner_type: 'International affiliate', website: 'https://www.iccia.com', display_order: 2, active: true, is_demo: false },
+  { id: 'partner-3', name: 'Hals & Hounds', slug: 'hals-and-hounds', partner_type: 'Technology partner', website: 'https://www.hals.io', display_order: 3, active: true, is_demo: false },
+];
 
 export const demoUsers: Array<AuthUser & { password: string }> = [
   {
@@ -1179,9 +1127,9 @@ export const auditLogs: AuditLog[] = [
 
 export const leadership = {
   president: {
-    name: 'President name to be confirmed',
+    name: 'Mohamed Mamdooh',
     title: 'President',
-    bio: 'The president leads the chamber board and represents the membership in national and international engagement. Biography to be supplied by the MCCI secretariat.',
+    bio: 'President of the Maldives National Chamber of Commerce & Industry.',
   },
   board: Array.from({ length: 8 }).map((_, index) => ({
     id: `board-${index + 1}`,

@@ -15,6 +15,7 @@ const lazyNamed = (loader: () => Promise<unknown>, exportName: string) =>
 
 const PublicLayout = lazy(() => import('@/components/layout/PublicLayout'));
 const Index = lazy(() => import('./pages/Index'));
+const UnderDevelopmentPage = lazy(() => import('@/pages/public/UnderDevelopmentPage'));
 const MembershipApplyPage = lazyNamed(
   () => import('@/features/membership/ApplicationWizard'),
   'MembershipApplyPage',
@@ -22,64 +23,22 @@ const MembershipApplyPage = lazyNamed(
 
 const loadAboutPages = () => import('@/pages/public/AboutPages');
 const AboutPage = lazyNamed(loadAboutPages, 'AboutPage');
-const CorporateProfilePage = lazyNamed(loadAboutPages, 'CorporateProfilePage');
-const HistoryPage = lazyNamed(loadAboutPages, 'HistoryPage');
 const LeadershipPage = lazyNamed(loadAboutPages, 'LeadershipPage');
-const MissionVisionPage = lazyNamed(loadAboutPages, 'MissionVisionPage');
-
-const loadCouncilPages = () => import('@/pages/public/CouncilPages');
-const CouncilDetailPage = lazyNamed(loadCouncilPages, 'CouncilDetailPage');
-const CouncilsPage = lazyNamed(loadCouncilPages, 'CouncilsPage');
-
-const loadPolicyPages = () => import('@/pages/public/PolicyPages');
-const EconomicResearchPage = lazyNamed(loadPolicyPages, 'EconomicResearchPage');
-const InternationalTradePage = lazyNamed(loadPolicyPages, 'InternationalTradePage');
-const LegislativeAffairsPage = lazyNamed(loadPolicyPages, 'LegislativeAffairsPage');
-const PolicyDetailPage = lazyNamed(loadPolicyPages, 'PolicyDetailPage');
-const PolicyPage = lazyNamed(loadPolicyPages, 'PolicyPage');
-const PolicyPositionsPage = lazyNamed(loadPolicyPages, 'PolicyPositionsPage');
-const PolicySubmissionDetailPage = lazyNamed(loadPolicyPages, 'PolicySubmissionDetailPage');
-const PolicySubmissionsPage = lazyNamed(loadPolicyPages, 'PolicySubmissionsPage');
-const RegulatoryAffairsPage = lazyNamed(loadPolicyPages, 'RegulatoryAffairsPage');
 
 const loadMembershipPages = () => import('@/pages/public/MembershipPages');
 const MembershipBenefitsPage = lazyNamed(loadMembershipPages, 'MembershipBenefitsPage');
 const MembershipPage = lazyNamed(loadMembershipPages, 'MembershipPage');
-const MembershipRenewalPage = lazyNamed(loadMembershipPages, 'MembershipRenewalPage');
 const MembershipTiersPage = lazyNamed(loadMembershipPages, 'MembershipTiersPage');
-
-const loadDirectoryPages = () => import('@/pages/public/DirectoryPages');
-const MemberDetailPage = lazyNamed(loadDirectoryPages, 'MemberDetailPage');
-const MemberDirectoryPage = lazyNamed(loadDirectoryPages, 'MemberDirectoryPage');
-
-const loadEventPages = () => import('@/pages/public/EventsPages');
-const EventDetailPage = lazyNamed(loadEventPages, 'EventDetailPage');
-const EventsCalendarPage = lazyNamed(loadEventPages, 'EventsCalendarPage');
-const EventsPage = lazyNamed(loadEventPages, 'EventsPage');
 
 const loadNewsPages = () => import('@/pages/public/NewsPages');
 const NewsDetailPage = lazyNamed(loadNewsPages, 'NewsDetailPage');
 const NewsPage = lazyNamed(loadNewsPages, 'NewsPage');
 
-const loadPublicationPages = () => import('@/pages/public/PublicationPages');
-const AnnualReportsPage = lazyNamed(loadPublicationPages, 'AnnualReportsPage');
-const PublicationDetailPage = lazyNamed(loadPublicationPages, 'PublicationDetailPage');
-const PublicationsPage = lazyNamed(loadPublicationPages, 'PublicationsPage');
-
-const loadMsmePages = () => import('@/pages/public/MsmePages');
-const MsmeDirectoryPage = lazyNamed(loadMsmePages, 'MsmeDirectoryPage');
-const MsmeEventsPage = lazyNamed(loadMsmePages, 'MsmeEventsPage');
-const MsmePage = lazyNamed(loadMsmePages, 'MsmePage');
-const MsmeProgramsPage = lazyNamed(loadMsmePages, 'MsmeProgramsPage');
 
 const loadMiscPages = () => import('@/pages/public/MiscPages');
-const AccessibilityPage = lazyNamed(loadMiscPages, 'AccessibilityPage');
 const ContactPage = lazyNamed(loadMiscPages, 'ContactPage');
 const NotFoundPage = lazyNamed(loadMiscPages, 'NotFoundPage');
 const PartnersPage = lazyNamed(loadMiscPages, 'PartnersPage');
-const PrivacyPage = lazyNamed(loadMiscPages, 'PrivacyPage');
-const SearchPage = lazyNamed(loadMiscPages, 'SearchPage');
-const TermsPage = lazyNamed(loadMiscPages, 'TermsPage');
 const UnauthorizedPage = lazyNamed(loadMiscPages, 'UnauthorizedPage');
 
 const loadAuthPages = () => import('@/pages/auth/AuthPages');
@@ -149,56 +108,40 @@ const App = () => (
                 <Route path="/" element={<Index />} />
 
                 <Route path="/about" element={<AboutPage />} />
-                <Route path="/about/mission-vision" element={<MissionVisionPage />} />
-                <Route path="/about/history" element={<HistoryPage />} />
+                <Route path="/about/mission-vision" element={<UnderDevelopmentPage title="Mission & Vision" />} />
+                <Route path="/about/history" element={<UnderDevelopmentPage title="History" />} />
                 <Route path="/about/leadership" element={<LeadershipPage />} />
-                <Route path="/about/corporate-profile" element={<CorporateProfilePage />} />
+                <Route path="/about/corporate-profile" element={<UnderDevelopmentPage title="Corporate Profile" />} />
 
-                <Route path="/councils" element={<CouncilsPage />} />
-                <Route path="/councils/:slug" element={<CouncilDetailPage />} />
+                <Route path="/councils" element={<UnderDevelopmentPage title="Industry Councils" description="Council names and current details are being confirmed." />} />
+                <Route path="/councils/:slug" element={<UnderDevelopmentPage title="Industry Council" description="Council names and current details are being confirmed." />} />
 
-                <Route path="/policy" element={<PolicyPage />} />
-                <Route path="/policy/international-trade" element={<InternationalTradePage />} />
-                <Route path="/policy/regulatory-affairs" element={<RegulatoryAffairsPage />} />
-                <Route path="/policy/legislative-affairs" element={<LegislativeAffairsPage />} />
-                <Route path="/policy/positions" element={<PolicyPositionsPage />} />
-                <Route path="/policy/positions/:slug" element={<PolicyDetailPage />} />
-                <Route path="/policy/submissions" element={<PolicySubmissionsPage />} />
-                <Route path="/policy/submissions/:slug" element={<PolicySubmissionDetailPage />} />
-                <Route path="/policy/research" element={<EconomicResearchPage />} />
+                <Route path="/policy/*" element={<UnderDevelopmentPage title="Policy & Advocacy" />} />
 
                 <Route path="/membership" element={<MembershipPage />} />
                 <Route path="/membership/benefits" element={<MembershipBenefitsPage />} />
                 <Route path="/membership/tiers" element={<MembershipTiersPage />} />
                 <Route path="/membership/apply" element={<MembershipApplyPage />} />
-                <Route path="/membership/renewal" element={<MembershipRenewalPage />} />
+                <Route path="/membership/renewal" element={<UnderDevelopmentPage title="Membership Renewal" />} />
 
-                <Route path="/directory/members" element={<MemberDirectoryPage />} />
-                <Route path="/directory/members/:slug" element={<MemberDetailPage />} />
+                <Route path="/directory/members/*" element={<UnderDevelopmentPage title="Member Directory" />} />
 
-                <Route path="/events" element={<EventsPage />} />
-                <Route path="/events/calendar" element={<EventsCalendarPage />} />
-                <Route path="/events/:slug" element={<EventDetailPage />} />
+                <Route path="/events/*" element={<UnderDevelopmentPage title="Events" description="The current MNCCI events programme is being updated." />} />
 
                 <Route path="/news" element={<NewsPage />} />
                 <Route path="/news/:slug" element={<NewsDetailPage />} />
 
-                <Route path="/publications" element={<PublicationsPage />} />
-                <Route path="/publications/:slug" element={<PublicationDetailPage />} />
-                <Route path="/annual-reports" element={<AnnualReportsPage />} />
-                <Route path="/annual-reports/:slug" element={<PublicationDetailPage />} />
+                <Route path="/publications/*" element={<UnderDevelopmentPage title="Publications" description="Approved publications and reports are being prepared for this section." />} />
+                <Route path="/annual-reports/*" element={<UnderDevelopmentPage title="Annual Reports" description="Approved annual reports are being prepared for this section." />} />
 
-                <Route path="/msme" element={<MsmePage />} />
-                <Route path="/msme/directory" element={<MsmeDirectoryPage />} />
-                <Route path="/msme/programs" element={<MsmeProgramsPage />} />
-                <Route path="/msme/events" element={<MsmeEventsPage />} />
+                <Route path="/msme/*" element={<UnderDevelopmentPage title="MSME Programmes" />} />
 
                 <Route path="/partners" element={<PartnersPage />} />
                 <Route path="/contact" element={<ContactPage />} />
-                <Route path="/search" element={<SearchPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/accessibility" element={<AccessibilityPage />} />
+                <Route path="/search" element={<UnderDevelopmentPage title="Site Search" />} />
+                <Route path="/privacy" element={<UnderDevelopmentPage title="Privacy Policy" />} />
+                <Route path="/terms" element={<UnderDevelopmentPage title="Terms of Use" />} />
+                <Route path="/accessibility" element={<UnderDevelopmentPage title="Accessibility" />} />
                 <Route path="/auth/unauthorized" element={<UnauthorizedPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
