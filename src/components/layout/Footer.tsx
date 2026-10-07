@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Linkedin, Mail, MapPin, Phone, Youtube } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { Button, Container, FieldError, FieldLabel, Logo, inputClass } from '@/components/common/ui';
 import { footerColumns } from '@/lib/navigation';
@@ -28,7 +28,7 @@ export const NewsletterForm: React.FC<{ source?: string; compact?: boolean }> = 
       await dataProvider.addSubscriber(email, name || undefined);
       toast({
         title: 'Subscription confirmed',
-        description: 'You have been added to the MCCI business bulletin list.',
+        description: 'You have been added to the MNCCI business bulletin list.',
       });
       setName('');
       setEmail('');
@@ -117,39 +117,10 @@ const Footer: React.FC = () => (
             {siteConfig.description}
           </p>
           <ul className="mt-5 space-y-2.5 text-[13px] text-white/65">
-            <li className="flex gap-2.5">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-white/50" aria-hidden="true" />
-              <span>{siteConfig.address}</span>
-            </li>
-            <li className="flex gap-2.5">
-              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-white/50" aria-hidden="true" />
-              <span>{siteConfig.phone}</span>
-            </li>
-            <li className="flex gap-2.5">
-              <Mail className="mt-0.5 h-4 w-4 shrink-0 text-white/50" aria-hidden="true" />
-              <a className="underline-offset-2 hover:underline" href={`mailto:${siteConfig.generalEmail}`}>
-                {siteConfig.generalEmail}
-              </a>
-            </li>
+            <li className="flex gap-2.5"><MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /><span>{siteConfig.address}</span></li>
+            <li className="flex gap-2.5"><Phone className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /><a href={`tel:${siteConfig.phone}`} className="hover:underline">{siteConfig.phone}</a></li>
+            <li className="flex gap-2.5"><Mail className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /><a href={`mailto:${siteConfig.generalEmail}`} className="hover:underline">{siteConfig.generalEmail}</a></li>
           </ul>
-          <div className="mt-5 flex gap-2">
-            {[
-              { Icon: Facebook, href: siteConfig.social.facebook, label: 'Facebook' },
-              { Icon: Linkedin, href: siteConfig.social.linkedin, label: 'LinkedIn' },
-              { Icon: Youtube, href: siteConfig.social.youtube, label: 'YouTube' },
-            ].map(({ Icon, href, label }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`MCCI on ${label}`}
-                className="rounded-full border border-white/15 p-2 text-white/65 transition-all hover:-translate-y-0.5 hover:border-cyan-300/60 hover:bg-white/10 hover:text-white"
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" />
-              </a>
-            ))}
-          </div>
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:col-span-4">
@@ -176,14 +147,11 @@ const Footer: React.FC = () => (
 
         <div className="lg:col-span-4">
           <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur-sm">
-          <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200/70">
-            Business bulletin
-          </h3>
-          <p className="mb-4 max-w-md text-[13px] leading-relaxed text-white/65">
-            Policy updates, event invitations and member notices.
-          </p>
-          <NewsletterForm compact />
-          <p className="mt-3 text-[11px] text-white/40">Useful updates only. Unsubscribe at any time.</p>
+          <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200/70">Office information</h3>
+          <dl className="space-y-3 text-[13px] text-white/65">
+            <div><dt className="text-white/40">Office hours</dt><dd>{siteConfig.officeHours}</dd></div>
+            <div><dt className="text-white/40">Fax</dt><dd>{siteConfig.fax}</dd></div>
+          </dl>
           </div>
         </div>
       </div>
@@ -192,12 +160,9 @@ const Footer: React.FC = () => (
     <div className="border-t border-white/10">
       <Container className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[12px] text-white/50">
-          © {new Date().getFullYear()} {siteConfig.legalName}. {siteConfig.registrationDetails}.
+          © {new Date().getFullYear()} {siteConfig.legalName}.
         </p>
-        <nav aria-label="Legal" className="flex flex-wrap gap-5 text-[12px] text-white/60">
-          <Link to="/privacy" className="hover:text-white">Privacy policy</Link>
-          <Link to="/terms" className="hover:text-white">Terms of use</Link>
-          <Link to="/accessibility" className="hover:text-white">Accessibility</Link>
+        <nav aria-label="Footer" className="flex flex-wrap gap-5 text-[12px] text-white/60">
           <Link to="/contact" className="hover:text-white">Contact</Link>
         </nav>
       </Container>

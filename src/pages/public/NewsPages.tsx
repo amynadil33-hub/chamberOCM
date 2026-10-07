@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Link2, Linkedin, Newspaper, Search } from 'lucide-react';
 import {
   Badge,
@@ -8,7 +7,6 @@ import {
   Card,
   Container,
   DemoBadge,
-  DemoNotice,
   EmptyState,
   Markdown,
   PageHeader,
@@ -16,13 +14,13 @@ import {
 } from '@/components/common/ui';
 import { usePageMeta } from '@/components/layout/PublicLayout';
 import { toast } from '@/components/ui/use-toast';
-import { dataProvider } from '@/lib/data/provider';
+import { newsPosts as verifiedNews } from '@/data/mockSeed';
 import { publicMediaUrl } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils/format';
 
 export const NewsPage: React.FC = () => {
   usePageMeta('News & Media', 'Chamber news, press releases and commentary.');
-  const { data: news = [] } = useQuery({ queryKey: ['news'], queryFn: () => dataProvider.news() });
+  const news = verifiedNews;
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
 
@@ -42,7 +40,7 @@ export const NewsPage: React.FC = () => {
       <PageHeader
         eyebrow="News & media"
         title="Chamber News"
-        description="Updates, press releases and commentary from the chamber and its industry councils."
+        description="Recent MNCCI meetings, business cooperation and trade engagement."
         breadcrumbs={[{ label: 'News' }]}
       />
       <Container className="py-14">
@@ -97,7 +95,6 @@ export const NewsPage: React.FC = () => {
                 <div className="p-7 lg:w-3/5">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge status="published" label={featured.category} />
-                    <DemoBadge />
                   </div>
                   <h2 className="mt-3 text-[24px] font-semibold leading-snug text-ink">
                     <Link to={`/news/${featured.slug}`} className="hover:text-brand">
@@ -140,7 +137,6 @@ export const NewsPage: React.FC = () => {
             </div>
           </>
         )}
-        <DemoNotice className="mt-10" />
       </Container>
     </>
   );
@@ -148,8 +144,8 @@ export const NewsPage: React.FC = () => {
 
 export const NewsDetailPage: React.FC = () => {
   const { slug = '' } = useParams();
-  const { data: post } = useQuery({ queryKey: ['news', slug], queryFn: () => dataProvider.newsPost(slug) });
-  const { data: news = [] } = useQuery({ queryKey: ['news'], queryFn: () => dataProvider.news() });
+  const news = verifiedNews;
+  const post = news.find((item) => item.slug === slug);
   usePageMeta(post?.title ?? 'News', post?.excerpt);
 
   if (!post) {
@@ -194,6 +190,16 @@ export const NewsDetailPage: React.FC = () => {
               </figure>
             )}
             <Markdown content={post.body_markdown} className="mt-2" />
+            {post.source_url && (
+              <a
+                href={post.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex text-[14px] font-semibold text-brand hover:text-brand-dark"
+              >
+                Read on the official MNCCI news portal
+              </a>
+            )}
 
             <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-surface-border pt-6">
               <span className="text-[13px] font-semibold text-ink">Share</span>
@@ -236,7 +242,6 @@ export const NewsDetailPage: React.FC = () => {
                 ))}
               </ul>
             </Card>
-            <DemoNotice />
           </aside>
         </div>
       </Container>

@@ -1,24 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, FileUp, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import {
-  Badge,
   Button,
-  ButtonLink,
   Card,
   Container,
-  DemoNotice,
   FieldError,
   FieldLabel,
   PageHeader,
   inputClass,
 } from '@/components/common/ui';
-import { toast } from '@/components/ui/use-toast';
-import { useAuth } from '@/lib/auth/AuthProvider';
-import { dataProvider } from '@/lib/data/provider';
-import { atolls, councils, employeeRanges, membershipTiers, sectors, turnoverRanges } from '@/data/mockSeed';
-import { formatCurrency, formatFileSize } from '@/lib/utils/format';
-import type { ApplicationDocument } from '@/types';
+import { atolls, employeeRanges, membershipTiers, sectors, turnoverRanges } from '@/data/mockSeed';
+import { formatCurrency } from '@/lib/utils/format';
 
 const steps = [
   'Membership tier',
@@ -29,16 +21,6 @@ const steps = [
   'Declaration',
   'Review & submit',
 ];
-
-const requiredDocs = [
-  'Business registration certificate',
-  'Director / shareholder list',
-  'Authorised signatory ID copy',
-];
-const optionalDocs = ['Company profile', 'Latest audited accounts', 'GST / BPT registration'];
-
-const MAX_SIZE = 5 * 1024 * 1024;
-const ALLOWED = ['application/pdf', 'image/jpeg', 'image/png'];
 
 interface FormState {
   tier_id: string;
@@ -85,14 +67,9 @@ const initialState: FormState = {
 };
 
 const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialState);
-  const [documents, setDocuments] = useState<ApplicationDocument[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [reference, setReference] = useState<string | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -112,13 +89,6 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact_email)) next.contact_email = 'Enter a valid email address.';
       if (!form.contact_mobile.trim()) next.contact_mobile = 'Enter a mobile number.';
     }
-    if (index === 3 && form.selected_council_ids.length === 0) {
-      next.councils = 'Select at least one industry council.';
-    }
-    if (index === 4) {
-      const missing = requiredDocs.filter((d) => !documents.some((doc) => doc.document_type === d));
-      if (missing.length > 0) next.documents = `Upload the required documents: ${missing.join(', ')}.`;
-    }
     if (index === 5) {
       if (!form.declaration_accepted) next.declaration = 'You must accept the declaration.';
       if (!form.privacy_accepted) next.privacy = 'You must accept the privacy terms.';
@@ -127,83 +97,7 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
     return Object.keys(next).length === 0;
   };
 
-  const handleUpload = (documentType: string, file: File | undefined) => {
-    if (!file) return;
-    if (file.size > MAX_SIZE) {
-      setErrors((e) => ({ ...e, documents: `${file.name} exceeds the 5 MB limit.` }));
-      return;
-    }
-    if (!ALLOWED.includes(file.type)) {
-      setErrors((e) => ({ ...e, documents: `${file.name} must be a PDF, JPG or PNG file.` }));
-      return;
-    }
-    setErrors((e) => ({ ...e, documents: '' }));
-    setDocuments((prev) => [
-      ...prev.filter((d) => d.document_type !== documentType),
-      {
-        id: `doc-${Date.now()}-${documentType}`,
-        application_id: 'pending',
-        document_type: documentType,
-        original_filename: file.name,
-        storage_path: `member-documents/${user?.id ?? 'guest'}/pending/${file.name}`,
-        mime_type: file.type,
-        file_size: file.size,
-        status: 'uploaded',
-        uploaded_at: new Date().toISOString(),
-      },
-    ]);
-    toast({ title: 'Document attached', description: `${file.name} is ready to submit.` });
-  };
-
-  const submit = async () => {
-    if (!validateStep(5)) return;
-    setSubmitting(true);
-    const record = await dataProvider.createApplication(
-      { ...form, documents },
-      user ?? { id: 'guest', email: form.contact_email, full_name: form.contact_name, role: 'member' },
-    );
-    setSubmitting(false);
-    setReference(record.application_reference);
-    toast({
-      title: 'Application submitted',
-      description: `Reference ${record.application_reference}. A confirmation email would be sent in production.`,
-    });
-  };
-
   const tier = membershipTiers.find((t) => t.id === form.tier_id);
-
-  if (reference) {
-    return (
-      <Card className="mx-auto max-w-2xl p-10 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-chamber-green-light text-chamber-green">
-          <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
-        </span>
-        <h2 className="mt-5 text-2xl font-semibold text-ink">Application submitted</h2>
-        <p className="mt-2 text-[15px] text-ink-soft">
-          Your application reference is{' '}
-          <span className="font-mono font-semibold text-brand-deep">{reference}</span>. You can track progress in
-          the member portal.
-        </p>
-        <div className="mt-6 grid gap-3 text-left sm:grid-cols-3">
-          {[
-            ['1', 'Chamber review', 'The membership team checks your form and documents.'],
-            ['2', 'Payment', 'Payment opens only after the chamber approves your application.'],
-            ['3', 'Certificate', 'Successful payment activates membership and issues your digital certificate.'],
-          ].map(([number, title, copy]) => (
-            <div key={number} className="rounded-lg border border-surface-border bg-surface-page p-4">
-              <span className="font-mono text-[11px] font-semibold text-brand">STEP {number}</span>
-              <p className="mt-1 text-[14px] font-semibold text-ink">{title}</p>
-              <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{copy}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
-          <ButtonLink to="/portal/application">Track application</ButtonLink>
-          <ButtonLink to="/" variant="outline">Return home</ButtonLink>
-        </div>
-      </Card>
-    );
-  }
 
   return (
     <div className={embedded ? '' : 'mx-auto max-w-4xl'}>
@@ -232,7 +126,7 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
         {step === 0 && (
           <fieldset>
             <legend className="text-xl font-semibold text-ink">Choose your membership tier</legend>
-            <p className="mt-2 text-[14px] text-ink-soft">All fees are demonstration values pending confirmation.</p>
+            <p className="mt-2 text-[14px] text-ink-soft">These proposed tiers and annual prices are intended to go through an AGM.</p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {membershipTiers.map((t) => (
                 <label
@@ -255,7 +149,6 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
                   <span className="mt-2 block font-mono text-[18px] font-semibold text-brand-deep">
                     {formatCurrency(t.annual_fee, t.currency).replace('.00', '')} / year
                   </span>
-                  <span className="mt-2 block text-[13px] leading-relaxed text-ink-soft">{t.description}</span>
                 </label>
               ))}
             </div>
@@ -348,7 +241,7 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
               </div>
               <div>
                 <FieldLabel htmlFor="a-cmobile" required>Mobile number</FieldLabel>
-                <input id="a-cmobile" type="tel" className={inputClass} value={form.contact_mobile} onChange={(e) => set('contact_mobile', e.target.value)} placeholder="+960 000 0000" />
+                <input id="a-cmobile" type="tel" className={inputClass} value={form.contact_mobile} onChange={(e) => set('contact_mobile', e.target.value)} />
                 <FieldError message={errors.contact_mobile} />
               </div>
             </div>
@@ -359,38 +252,10 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
           <fieldset>
             <legend className="text-xl font-semibold text-ink">Industry councils</legend>
             <p className="mt-2 text-[14px] text-ink-soft">
-              Select the councils your business would like to participate in. Council access depends on your tier.
+              Council names and participation details are under development and will be confirmed with applicants.
             </p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {councils.map((council) => {
-                const checked = form.selected_council_ids.includes(council.id);
-                return (
-                  <label
-                    key={council.id}
-                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${
-                      checked ? 'border-brand bg-brand-light' : 'border-surface-border bg-white hover:border-brand/40'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) =>
-                        set(
-                          'selected_council_ids',
-                          e.target.checked
-                            ? [...form.selected_council_ids, council.id]
-                            : form.selected_council_ids.filter((id) => id !== council.id),
-                        )
-                      }
-                      className="mt-1 h-4 w-4 rounded border-surface-border text-brand focus:ring-brand"
-                    />
-                    <span>
-                      <span className="block text-[15px] font-semibold text-ink">{council.name}</span>
-                      <span className="mt-1 block text-[13px] text-ink-soft">{council.short_description}</span>
-                    </span>
-                  </label>
-                );
-              })}
+            <div className="mt-5 rounded-lg border border-surface-border bg-surface-page p-5 text-[14px] text-ink-soft">
+              Under Development — no council selection is required at this stage.
             </div>
             <FieldError message={errors.councils} />
           </fieldset>
@@ -399,60 +264,12 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
         {step === 4 && (
           <fieldset>
             <legend className="text-xl font-semibold text-ink">Required documents</legend>
-            <p className="mt-2 text-[14px] text-ink-soft">
-              PDF, JPG or PNG. Maximum 5 MB per file. Documents are stored privately and reviewed by the membership team.
-            </p>
-            <div className="mt-5 space-y-3">
-              {[...requiredDocs, ...optionalDocs].map((docType) => {
-                const uploaded = documents.find((d) => d.document_type === docType);
-                const isRequired = requiredDocs.includes(docType);
-                return (
-                  <div key={docType} className="rounded-lg border border-surface-border p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-[14.5px] font-semibold text-ink">
-                          {docType}
-                          {isRequired && <span className="ml-1 text-[#C2414B]">*</span>}
-                        </p>
-                        {uploaded ? (
-                          <p className="mt-1 font-mono text-[12px] text-ink-soft">
-                            {uploaded.original_filename} · {formatFileSize(uploaded.file_size)}
-                          </p>
-                        ) : (
-                          <p className="mt-1 text-[12.5px] text-ink-muted">
-                            {isRequired ? 'Required' : 'Optional'}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {uploaded && <Badge status="uploaded" />}
-                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-surface-border px-3 py-2 text-[13px] font-semibold text-brand-deep hover:border-brand hover:bg-brand-light">
-                          <FileUp className="h-4 w-4" aria-hidden="true" />
-                          {uploaded ? 'Replace' : 'Upload'}
-                          <input
-                            type="file"
-                            className="sr-only"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            onChange={(e) => handleUpload(docType, e.target.files?.[0])}
-                          />
-                        </label>
-                        {uploaded && (
-                          <button
-                            type="button"
-                            onClick={() => setDocuments((prev) => prev.filter((d) => d.id !== uploaded.id))}
-                            aria-label={`Remove ${docType}`}
-                            className="rounded-md border border-surface-border p-2 text-ink-muted hover:border-[#C2414B] hover:text-[#C2414B]"
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="mt-5 rounded-lg border border-surface-border bg-surface-page p-6 text-center">
+              <h3 className="text-[16px] font-semibold text-ink">Under Development</h3>
+              <p className="mx-auto mt-2 max-w-xl text-[14px] leading-relaxed text-ink-soft">
+                Document requirements and secure upload are being finalised. No documents are collected at this stage.
+              </p>
             </div>
-            <FieldError message={errors.documents} />
           </fieldset>
         )}
 
@@ -510,27 +327,10 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
                 </div>
               ))}
             </dl>
-            <div className="mt-6">
-              <p className="text-[12px] uppercase tracking-wider text-ink-muted">Selected councils</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {form.selected_council_ids.map((id) => (
-                  <Badge key={id} status="info" label={councils.find((c) => c.id === id)?.name ?? id} />
-                ))}
-                {form.selected_council_ids.length === 0 && <span className="text-[14px] text-ink-soft">None selected</span>}
-              </div>
+            <div className="mt-6 rounded-lg border border-brand/20 bg-brand-light p-5 text-[14px] leading-relaxed text-ink-soft">
+              <strong className="font-semibold text-ink">Submission is not yet enabled.</strong>{' '}
+              You may review the form, but it will not be sent or stored until the secure submission process is ready.
             </div>
-            <div className="mt-6">
-              <p className="text-[12px] uppercase tracking-wider text-ink-muted">Attached documents</p>
-              <ul className="mt-2 space-y-1.5 text-[14px] text-ink-soft">
-                {documents.map((d) => (
-                  <li key={d.id} className="font-mono text-[12.5px]">
-                    {d.document_type}: {d.original_filename} ({formatFileSize(d.file_size)})
-                  </li>
-                ))}
-                {documents.length === 0 && <li>No documents attached</li>}
-              </ul>
-            </div>
-            <DemoNotice className="mt-6" />
           </div>
         )}
 
@@ -553,8 +353,8 @@ const ApplicationWizard: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
               Continue
             </Button>
           ) : (
-            <Button type="button" variant="secondary" loading={submitting} onClick={submit}>
-              Submit application
+            <Button type="button" variant="secondary" disabled>
+              Submission not yet enabled
             </Button>
           )}
         </div>
@@ -568,7 +368,7 @@ export const MembershipApplyPage: React.FC = () => (
     <PageHeader
       eyebrow="Membership"
       title="Apply for Membership"
-      description="Complete the seven-step application. You can review every answer before submitting."
+      description="Review the proposed membership application steps. Online submission is not yet enabled."
       breadcrumbs={[{ label: 'Membership', to: '/membership' }, { label: 'Apply' }]}
     />
     <Container className="py-14">

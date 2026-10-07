@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Compass, Download, Eye, FileText, Target, UserRound } from 'lucide-react';
+import { Compass, Download, Eye, FileText, Target, UserRound } from 'lucide-react';
 import {
   ButtonLink,
   Card,
@@ -8,20 +8,18 @@ import {
   DemoNotice,
   PageHeader,
   SectionHeading,
-  StatBlock,
 } from '@/components/common/ui';
 import { usePageMeta } from '@/components/layout/PublicLayout';
 import { leadership, milestones } from '@/data/mockSeed';
-import { siteConfig } from '@/lib/config';
 
 export const AboutPage: React.FC = () => {
-  usePageMeta('About MCCI', 'Who we are, what we do and how the chamber serves Maldivian business.');
+  usePageMeta('About MNCCI', 'Who we are and how the chamber supports commerce and industry.');
   return (
     <>
       <PageHeader
         eyebrow="About"
         title="About the Maldives National Chamber of Commerce & Industry"
-        description="The chamber is the collective voice of Maldivian business — representing enterprise in national policy, connecting members to markets and strengthening private sector capability."
+        description="MNCCI is an independent, membership-driven organisation promoting commerce, industry, trade and public welfare."
         breadcrumbs={[{ label: 'About' }]}
       />
       <Container className="py-14">
@@ -29,44 +27,20 @@ export const AboutPage: React.FC = () => {
           <div className="lg:col-span-8">
             <h2 className="text-2xl font-semibold text-ink">Our role</h2>
             <p className="mt-4 text-[16px] leading-relaxed text-ink-soft">
-              MCCI represents businesses of every size across the archipelago. Members range from island
-              guesthouses, fishing enterprises and family trading companies to national contractors,
-              financial institutions, logistics operators and technology firms.
+              MNCCI supports Maldivian businesses and trade by providing information, creating opportunities
+              for business connections and maintaining relationships with local and international organisations.
             </p>
             <p className="mt-4 text-[16px] leading-relaxed text-ink-soft">
-              The chamber's work is organised through industry councils, a structured policy and advocacy
-              programme, economic research, and services that help businesses grow — from trade
-              documentation and training to market linkages and MSME support.
+              The chamber promotes dialogue between business and government and offers a platform for trade
+              and investment engagement in the Maldives.
             </p>
-            <h2 className="mt-10 text-2xl font-semibold text-ink">Organisational structure</h2>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {[
-                { title: 'General membership', text: 'All registered member businesses across the atolls.' },
-                { title: 'Board of directors', text: 'Elected representatives providing governance and direction.' },
-                { title: 'Industry councils', text: 'Five sector councils leading technical and policy work.' },
-                { title: 'Secretariat', text: 'The permanent staff delivering services and operations.' },
-              ].map((block) => (
-                <Card key={block.title} className="p-5">
-                  <Building2 className="h-5 w-5 text-brand" aria-hidden="true" />
-                  <h3 className="mt-3 text-[15px] font-semibold text-ink">{block.title}</h3>
-                  <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-soft">{block.text}</p>
-                </Card>
-              ))}
-            </div>
-            <DemoNotice className="mt-8" />
           </div>
           <aside className="space-y-4 lg:col-span-4">
-            {siteConfig.stats.map((stat) => (
-              <StatBlock key={stat.label} value={stat.value} label={stat.label} note={stat.note} />
-            ))}
             <Card className="p-5">
               <h3 className="text-[15px] font-semibold text-ink">Explore further</h3>
               <ul className="mt-3 space-y-2 text-[14px]">
                 {[
-                  { label: 'Mission & vision', to: '/about/mission-vision' },
-                  { label: 'History & milestones', to: '/about/history' },
-                  { label: 'President & board', to: '/about/leadership' },
-                  { label: 'Corporate profile', to: '/about/corporate-profile' },
+                  { label: 'President', to: '/about/leadership' },
                   { label: 'Industry councils', to: '/councils' },
                 ].map((link) => (
                   <li key={link.to}>
@@ -192,33 +166,22 @@ const PersonCard: React.FC<{ name: string; title: string; bio: string; large?: b
 );
 
 export const LeadershipPage: React.FC = () => {
-  usePageMeta('President & Board', 'Governance, board membership and the chamber secretariat.');
+  usePageMeta('President', 'President of the Maldives National Chamber of Commerce & Industry.');
   return (
     <>
       <PageHeader
         eyebrow="About"
-        title="President & Board"
-        description="Governance of the chamber rests with an elected board, supported by a permanent secretariat."
+        title="President"
+        description="Current President of the Maldives National Chamber of Commerce & Industry."
         breadcrumbs={[{ label: 'About', to: '/about' }, { label: 'Leadership' }]}
       />
       <Container className="py-14">
-        <DemoNotice className="mb-10" />
         <SectionHeading eyebrow="Office of the President" title="President" />
         <PersonCard large {...leadership.president} />
-
-        <SectionHeading className="mt-14" eyebrow="Governance" title="Board of directors" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {leadership.board.map((member) => (
-            <PersonCard key={member.id} name={member.name} title={member.title} bio={member.bio} />
-          ))}
-        </div>
-
-        <SectionHeading className="mt-14" eyebrow="Operations" title="Secretariat & executive management" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {leadership.secretariat.map((member) => (
-            <PersonCard key={member.id} name={member.name} title={member.title} bio={member.bio} />
-          ))}
-        </div>
+        <Card className="mt-10 p-8 text-center">
+          <h2 className="text-xl font-semibold text-ink">Board & Secretariat</h2>
+          <p className="mt-2 text-[14px] text-ink-soft">Under Development — the current board and secretariat information is being confirmed.</p>
+        </Card>
       </Container>
     </>
   );
@@ -237,7 +200,7 @@ export const CorporateProfilePage: React.FC = () => {
       <Container className="py-14">
         <div className="grid gap-4 md:grid-cols-3">
           {[
-            { title: 'MCCI corporate profile', note: 'PDF placeholder · to be supplied', icon: FileText },
+            { title: 'MNCCI corporate profile', note: 'PDF placeholder · to be supplied', icon: FileText },
             { title: 'Chamber factsheet', note: 'PDF placeholder · to be supplied', icon: FileText },
             { title: 'Logo & brand guidance', note: 'Asset pack placeholder', icon: Download },
           ].map(({ title, note, icon: Icon }) => (

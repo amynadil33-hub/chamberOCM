@@ -72,7 +72,7 @@ export const DemoBadge: React.FC<{ className?: string }> = ({ className }) => (
       'inline-flex items-center rounded border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-[#B7791F]',
       className,
     )}
-    title="Demonstration content — not verified MCCI information"
+    title="Demonstration content — not verified MNCCI information"
   >
     Demo data
   </span>
