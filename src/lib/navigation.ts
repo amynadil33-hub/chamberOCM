@@ -24,7 +24,7 @@ export const publicNav: NavItem[] = [
   {
     label: 'Councils',
     to: '/councils',
-    children: [{ label: 'Industry Councils', to: '/councils', description: 'Council details are being confirmed' }],
+    children: [{ label: 'Industry Councils', to: '/councils', description: 'Sector priorities, programmes and members' }],
   },
   {
     label: 'Membership',
@@ -39,22 +39,22 @@ export const publicNav: NavItem[] = [
   {
     label: 'Events',
     to: '/events',
-    children: [{ label: 'Events', to: '/events', description: 'Current programme being updated' }],
+    children: [{ label: 'Events', to: '/events', description: 'Upcoming events and registration' }],
   },
   {
     label: 'Policy',
     to: '/policy',
-    children: [{ label: 'Policy & Advocacy', to: '/policy', description: 'Section being updated' }],
+    children: [{ label: 'Policy & Advocacy', to: '/policy', description: 'Positions, submissions and research' }],
   },
   {
     label: 'Resources',
     to: '/news',
     children: [
       { label: 'News & Media', to: '/news', description: 'Latest chamber updates' },
-      { label: 'Publications', to: '/publications', description: 'Reports and resources being updated' },
-      { label: 'Annual Reports', to: '/annual-reports', description: 'Approved reports being prepared' },
-      { label: 'Member Directory', to: '/directory/members', description: 'Section being updated' },
-      { label: 'MSME Programmes', to: '/msme', description: 'Section being updated' },
+      { label: 'Publications', to: '/publications', description: 'Reports, research and business resources' },
+      { label: 'Annual Reports', to: '/annual-reports', description: 'Published chamber annual reports' },
+      { label: 'Member Directory', to: '/directory/members', description: 'Find chamber member organisations' },
+      { label: 'MSME Programmes', to: '/msme', description: 'Programmes for smaller businesses' },
       { label: 'Affiliations & Partners', to: '/partners', description: 'Published MNCCI relationships' },
       { label: 'Contact MNCCI', to: '/contact', description: 'Send an enquiry' },
     ],
