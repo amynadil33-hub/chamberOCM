@@ -158,6 +158,16 @@
   50% { opacity: 1; }
 }
 
+@keyframes homepage-shell-drift {
+  0% { opacity: 0; transform: translate3d(-6rem, 2vh, 0) rotate(-12deg); }
+  8% { opacity: 0.28; }
+  28% { transform: translate3d(28vw, 11vh, 0) rotate(3deg); }
+  52% { transform: translate3d(54vw, -4vh, 0) rotate(-7deg); }
+  76% { transform: translate3d(80vw, 10vh, 0) rotate(7deg); }
+  92% { opacity: 0.28; }
+  100% { opacity: 0; transform: translate3d(calc(100vw + 6rem), 1vh, 0) rotate(14deg); }
+}
+
 .hero-rise { animation: hero-rise 0.7s both cubic-bezier(0.22, 1, 0.36, 1); }
 .hero-delay-1 { animation-delay: 0.1s; }
 .hero-delay-2 { animation-delay: 0.2s; }
@@ -169,13 +179,20 @@
 .hero-orb-three { animation-delay: -6s; animation-duration: 15s; }
 .hero-network { animation: hero-network-drift 12s ease-in-out infinite; }
 .hero-pulse-node { animation: hero-node-pulse 3s ease-in-out infinite; transform-origin: center; }
+.homepage-shell-drift {
+  animation: homepage-shell-drift 26s linear infinite;
+  filter: brightness(0) saturate(100%) invert(25%) sepia(27%) saturate(1904%) hue-rotate(169deg) brightness(88%) contrast(91%) drop-shadow(0 8px 16px rgba(12, 43, 80, 0.2));
+}
 
 @media (prefers-reduced-motion: reduce) {
   .hero-rise,
   .hero-float,
   .hero-orb,
   .hero-network,
-  .hero-pulse-node {
+  .hero-pulse-node,
+  .homepage-shell-drift {
     animation: none !important;
   }
+
+  .homepage-shell-drift { display: none; }
 }

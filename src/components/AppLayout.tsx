@@ -103,6 +103,12 @@ const AppLayout: React.FC = () => {
 
   return (
     <>
+      <img
+        src="/images/home/mncci-shell-mark.png"
+        alt=""
+        aria-hidden="true"
+        className="homepage-shell-drift pointer-events-none fixed left-0 top-[18vh] z-20 h-12 w-12 select-none object-contain opacity-0 drop-shadow-[0_8px_16px_rgba(12,43,80,0.28)] sm:h-16 sm:w-16"
+      />
       {/* HERO */}
       <section className="relative isolate overflow-hidden bg-[linear-gradient(120deg,#101f46_0%,#334fa4_48%,#087b77_100%)] text-white">
         <div className="hero-orb hero-orb-one pointer-events-none absolute -left-20 top-12 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" aria-hidden="true" />
