@@ -4,9 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import {
   ArrowRight,
   BadgeCheck,
+  BookOpen,
   CalendarDays,
   Globe2,
-  Handshake,
   Mail,
   MapPin,
   Newspaper,
@@ -14,7 +14,6 @@ import {
   Scale,
   Sprout,
   Users,
-  Wrench,
 } from 'lucide-react';
 import {
   Badge,
@@ -28,19 +27,15 @@ import {
 import { usePageMeta } from '@/components/layout/PublicLayout';
 import { LOGO_URL, siteConfig } from '@/lib/config';
 import { formatDate } from '@/lib/utils/format';
-import { membershipTiers, newsPosts, partners } from '@/data/mockSeed';
+import {
+  events as seededEvents,
+  membershipTiers,
+  newsPosts,
+  partners,
+  publications as seededPublications,
+} from '@/data/mockSeed';
 import { dataProvider } from '@/lib/data/provider';
 import { publicMediaUrl } from '@/lib/supabase';
-
-const UnderDevelopmentPanel: React.FC<{ text: string; className?: string }> = ({ text, className }) => (
-  <Card className={`flex min-h-44 flex-col items-center justify-center p-8 text-center ${className ?? ''}`}>
-    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-light text-brand">
-      <Wrench className="h-5 w-5" aria-hidden="true" />
-    </span>
-    <h3 className="mt-4 text-[18px] font-semibold text-ink">Under Development</h3>
-    <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-ink-soft">{text}</p>
-  </Card>
-);
 
 const HeroPattern: React.FC = () => (
   <svg
@@ -95,11 +90,20 @@ const AppLayout: React.FC = () => {
   const featuredNews = newsPosts[0];
   const otherNews = newsPosts.slice(1, 4);
   const { data: homeEvents = [] } = useQuery({ queryKey: ['events'], queryFn: () => dataProvider.events() });
-  const publishedEvents = homeEvents
+  const eventSource = homeEvents.length > 0 ? homeEvents : seededEvents;
+  const recentEvents = eventSource
     .filter((event) => event.status === 'published')
-    .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
-  const latestEvent = publishedEvents.find((event) => new Date(event.starts_at).getTime() >= Date.now())
-    ?? publishedEvents[publishedEvents.length - 1];
+    .sort((a, b) => b.starts_at.localeCompare(a.starts_at))
+    .slice(0, 3);
+  const { data: homePublications = [] } = useQuery({
+    queryKey: ['publications'],
+    queryFn: () => dataProvider.publications(),
+  });
+  const publicationSource = homePublications.length > 0 ? homePublications : seededPublications;
+  const recentPublications = publicationSource
+    .filter((publication) => publication.status === 'published')
+    .sort((a, b) => b.published_at.localeCompare(a.published_at))
+    .slice(0, 3);
 
   return (
     <>
@@ -263,19 +267,6 @@ const AppLayout: React.FC = () => {
         </Container>
       </section>
 
-      {/* COUNCILS */}
-      <section className="py-16">
-        <Container>
-          <SectionHeading
-            eyebrow="Industry councils"
-            title="Industry council information"
-            description="The council structure remains part of MNCCI, while current council names and details are being confirmed."
-            action={<ButtonLink to="/councils" variant="outline">All councils</ButtonLink>}
-          />
-          <UnderDevelopmentPanel text="Council names, leadership and current programme details are being updated." />
-        </Container>
-      </section>
-
       {/* NEWS */}
       <section className="border-y border-surface-border bg-white py-16">
         <Container>
@@ -337,53 +328,46 @@ const AppLayout: React.FC = () => {
         <Container>
           <SectionHeading
             eyebrow="Events"
-            title="Latest event"
-            description="The newest published chamber event, with registration and organiser information."
+            title="Recent events"
+            description="The latest chamber programmes, training sessions and business gatherings."
             action={<ButtonLink to="/events" variant="outline">Events calendar</ButtonLink>}
           />
-          {latestEvent ? (
-            <Card className="overflow-hidden">
-              <div className="grid lg:grid-cols-12">
-                <div className="relative min-h-64 overflow-hidden bg-gradient-to-br from-brand-deep to-brand lg:col-span-5">
-                  {latestEvent.cover_image_path ? (
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {recentEvents.map((event) => (
+              <Card key={event.id} className="group overflow-hidden hover:-translate-y-1 hover:shadow-lg">
+                <div className="relative h-48 overflow-hidden bg-gradient-to-br from-brand-deep to-brand">
+                  {event.cover_image_path ? (
                     <img
-                      src={publicMediaUrl(latestEvent.cover_image_path)}
-                      alt={latestEvent.cover_image_alt ?? latestEvent.title}
-                      className="absolute inset-0 h-full w-full object-cover"
-                      style={{ objectPosition: latestEvent.cover_image_position ?? 'center' }}
+                      src={publicMediaUrl(event.cover_image_path)}
+                      alt={event.cover_image_alt ?? event.title}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      style={{ objectPosition: event.cover_image_position ?? 'center' }}
+                      loading="lazy"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <CalendarDays className="h-16 w-16 text-white/55" aria-hidden="true" />
+                    <div className="flex h-full items-center justify-center">
+                      <CalendarDays className="h-14 w-14 text-white/60" aria-hidden="true" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/75 via-transparent to-transparent" aria-hidden="true" />
-                  <span className="absolute left-5 top-5"><Badge status="published" label={latestEvent.event_type} /></span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/70 via-transparent to-transparent" aria-hidden="true" />
+                  <span className="absolute left-4 top-4"><Badge status="published" label={event.event_type} /></span>
                 </div>
-                <div className="p-7 sm:p-9 lg:col-span-7">
-                  <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">
-                    {formatDate(latestEvent.starts_at)}
-                  </p>
-                  <h3 className="mt-3 text-[25px] font-semibold leading-tight text-ink">
-                    <Link to={`/events/${latestEvent.slug}`} className="hover:text-brand">{latestEvent.title}</Link>
+                <div className="p-5">
+                  <time dateTime={event.starts_at} className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
+                    {formatDate(event.starts_at)}
+                  </time>
+                  <h3 className="mt-2 text-[18px] font-semibold leading-snug text-ink">
+                    <Link to={`/events/${event.slug}`} className="hover:text-brand">{event.title}</Link>
                   </h3>
-                  <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">{latestEvent.summary}</p>
-                  <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-ink-soft">
-                    <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-brand" aria-hidden="true" />{latestEvent.venue}</span>
-                    {(latestEvent.organizer_name || latestEvent.partner_organization) && (
-                      <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-brand" aria-hidden="true" />{latestEvent.organizer_name ?? latestEvent.partner_organization}</span>
-                    )}
-                  </div>
-                  <Link to={`/events/${latestEvent.slug}`} className="mt-7 inline-flex items-center gap-2 text-[14px] font-semibold text-brand hover:text-brand-dark">
-                    View event details
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                  </Link>
+                  <p className="mt-3 line-clamp-2 text-[13.5px] leading-relaxed text-ink-soft">{event.summary}</p>
+                  <p className="mt-4 flex items-start gap-2 text-[12.5px] text-ink-soft">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" />
+                    {event.venue}
+                  </p>
                 </div>
-              </div>
-            </Card>
-          ) : (
-            <UnderDevelopmentPanel text="Approved event dates, venues and registration information will appear here." />
-          )}
+              </Card>
+            ))}
+          </div>
         </Container>
       </section>
 
@@ -416,36 +400,34 @@ const AppLayout: React.FC = () => {
         </Container>
       </section>
 
-      {/* POLICY TRACKER */}
-      <section className="py-16">
-        <Container>
-          <SectionHeading
-            eyebrow="Policy & advocacy"
-            title="Policy & advocacy"
-            description="Current policy positions and submissions are being reviewed before publication."
-            action={<ButtonLink to="/policy" variant="outline">Policy priorities</ButtonLink>}
-          />
-          <UnderDevelopmentPanel text="Approved policy priorities, positions and submissions will be published here." />
-        </Container>
-      </section>
-
-      {/* PUBLICATION + MSME */}
+      {/* PUBLICATIONS */}
       <section className="border-y border-surface-border bg-white py-16">
         <Container>
-          <div className="grid gap-8 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <SectionHeading eyebrow="Publications" title="Featured publication" className="mb-6" />
-              <UnderDevelopmentPanel text="Approved publications and annual reports are being prepared for this section." className="min-h-72" />
-            </div>
-            <div className="lg:col-span-7">
-              <SectionHeading
-                eyebrow="MSME support"
-                title="Programmes for smaller businesses"
-                action={<ButtonLink to="/msme/programs" variant="outline">All programmes</ButtonLink>}
-                className="mb-6"
-              />
-              <UnderDevelopmentPanel text="Current MNCCI programmes and application information are being updated." className="min-h-72" />
-            </div>
+          <SectionHeading
+            eyebrow="Publications"
+            title="Recent publications"
+            description="Reports, research and practical resources from the chamber."
+            action={<ButtonLink to="/publications" variant="outline">All publications</ButtonLink>}
+          />
+          <div className="grid gap-5 md:grid-cols-3">
+            {recentPublications.map((publication) => (
+              <Card key={publication.id} className="flex h-full flex-col p-6 hover:-translate-y-1 hover:shadow-lg">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-light text-brand">
+                  <BookOpen className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <p className="mt-5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-brand">
+                  {publication.publication_type.replaceAll('_', ' ')} · {formatDate(publication.published_at)}
+                </p>
+                <h3 className="mt-2 text-[18px] font-semibold leading-snug text-ink">
+                  <Link to={`/publications/${publication.slug}`} className="hover:text-brand">{publication.title}</Link>
+                </h3>
+                <p className="mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-ink-soft">{publication.summary}</p>
+                <Link to={`/publications/${publication.slug}`} className="mt-auto inline-flex items-center gap-2 pt-6 text-[13px] font-semibold text-brand hover:text-brand-dark">
+                  Read publication
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Card>
+            ))}
           </div>
         </Container>
       </section>
@@ -459,13 +441,26 @@ const AppLayout: React.FC = () => {
             description="Publicly identified international affiliations and technology partnership."
             action={<ButtonLink to="/partners" variant="outline">View affiliations</ButtonLink>}
           />
-          <div className="grid gap-3 sm:grid-cols-3">
-            {partners.map((partner) => (
-              <Card key={partner.id} className="flex flex-col items-center justify-center gap-2 p-6 text-center">
-                <Handshake className="h-6 w-6 text-brand" aria-hidden="true" />
-                <p className="text-[13px] font-semibold text-ink">{partner.name}</p>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">{partner.partner_type}</p>
-              </Card>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {partners.map((partner, index) => (
+              <a key={partner.id} href={partner.website} target="_blank" rel="noreferrer" className="group block">
+                <Card className="h-full overflow-hidden border-surface-border bg-white p-0 transition group-hover:-translate-y-1 group-hover:border-brand/25 group-hover:shadow-lg">
+                  <div
+                    role="img"
+                    aria-label={`${partner.name} logo`}
+                    className="h-28 w-full bg-[#f4f4f4] bg-no-repeat"
+                    style={{
+                      backgroundImage: 'url(/images/partners/mncci-partner-logos.png)',
+                      backgroundPosition: `${index * 50}% 0%`,
+                      backgroundSize: '320% auto',
+                    }}
+                  />
+                  <div className="border-t border-surface-border p-5 text-center">
+                    <p className="text-[14px] font-semibold text-ink group-hover:text-brand">{partner.name}</p>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted">{partner.partner_type}</p>
+                  </div>
+                </Card>
+              </a>
             ))}
           </div>
         </Container>
