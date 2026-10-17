@@ -243,6 +243,25 @@ interface ContentRecord {
   content_image_path?: string;
   content_image_alt?: string;
   content_image_position?: string;
+  summary?: string;
+  event_type?: string;
+  starts_at?: string;
+  ends_at?: string;
+  venue?: string;
+  island?: string;
+  atoll?: string;
+  audience?: string;
+  capacity?: number;
+  fee?: number;
+  currency?: string;
+  registration_open?: boolean;
+  registration_deadline?: string;
+  member_only?: boolean;
+  organizer_name?: string;
+  organizer_details?: string;
+  organizer_image_path?: string;
+  organizer_image_alt?: string;
+  partner_organization?: string;
 }
 
 interface ContentFormState {
@@ -259,7 +278,33 @@ interface ContentFormState {
   content_image_path: string;
   content_image_alt: string;
   content_image_position: string;
+  summary: string;
+  event_type: string;
+  starts_at: string;
+  ends_at: string;
+  venue: string;
+  island: string;
+  atoll: string;
+  audience: string;
+  capacity: string;
+  fee: string;
+  currency: string;
+  registration_open: boolean;
+  registration_deadline: string;
+  member_only: boolean;
+  organizer_name: string;
+  organizer_details: string;
+  organizer_image_path: string;
+  organizer_image_alt: string;
 }
+
+const toDateTimeLocal = (value?: string) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+};
 
 const emptyContentForm = (): ContentFormState => ({
   title: '',
@@ -275,6 +320,24 @@ const emptyContentForm = (): ContentFormState => ({
   content_image_path: '',
   content_image_alt: '',
   content_image_position: 'center',
+  summary: '',
+  event_type: 'forum',
+  starts_at: '',
+  ends_at: '',
+  venue: '',
+  island: '',
+  atoll: '',
+  audience: '',
+  capacity: '',
+  fee: '0',
+  currency: 'MVR',
+  registration_open: true,
+  registration_deadline: '',
+  member_only: false,
+  organizer_name: '',
+  organizer_details: '',
+  organizer_image_path: '',
+  organizer_image_alt: '',
 });
 
 const imagePositions = [
@@ -337,7 +400,7 @@ const ContentManager: React.FC<{
   const { data: items = [] } = useQuery({ queryKey: [queryKey], queryFn: load });
   const [editing, setEditing] = useState<ContentRecord | null>(null);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState<'hero' | 'content' | null>(null);
+  const [uploading, setUploading] = useState<'hero' | 'content' | 'organizer' | null>(null);
   const [form, setForm] = useState<ContentFormState>(emptyContentForm);
   const supportsImages = isImageArticleCollection(collection);
 
@@ -362,11 +425,30 @@ const ContentManager: React.FC<{
       content_image_path: record.content_image_path ?? '',
       content_image_alt: record.content_image_alt ?? '',
       content_image_position: record.content_image_position ?? 'center',
+      summary: record.summary ?? '',
+      event_type: record.event_type ?? 'forum',
+      starts_at: toDateTimeLocal(record.starts_at),
+      ends_at: toDateTimeLocal(record.ends_at),
+      venue: record.venue ?? '',
+      island: record.island ?? '',
+      atoll: record.atoll ?? '',
+      audience: record.audience ?? '',
+      capacity: record.capacity === undefined ? '' : String(record.capacity),
+      fee: record.fee === undefined ? '0' : String(record.fee),
+      currency: record.currency ?? 'MVR',
+      registration_open: record.registration_open ?? true,
+      registration_deadline: toDateTimeLocal(record.registration_deadline),
+      member_only: record.member_only ?? false,
+      organizer_name: record.organizer_name ?? record.partner_organization ?? '',
+      organizer_details: record.organizer_details ?? '',
+      organizer_image_path: record.organizer_image_path ?? '',
+      organizer_image_alt: record.organizer_image_alt ?? '',
     });
   };
 
-  const uploadImage = async (slot: 'hero' | 'content', file?: File) => {
+  const uploadImage = async (slot: 'hero' | 'content' | 'organizer', file?: File) => {
     if (!file || !editing || !isImageArticleCollection(collection)) return;
+    if (slot === 'organizer' && collection !== 'events') return;
     setUploading(slot);
     const result = await uploadPublicImage(file, collection, editing.id, slot);
     setUploading(null);
@@ -374,20 +456,24 @@ const ContentManager: React.FC<{
       toast({ title: 'Could not upload image', description: result.error ?? undefined, variant: 'destructive' });
       return;
     }
-    const pathField = slot === 'hero' ? 'cover_image_path' : 'content_image_path';
-    const altField = slot === 'hero' ? 'cover_image_alt' : 'content_image_alt';
+    const pathField = slot === 'hero' ? 'cover_image_path' : slot === 'content' ? 'content_image_path' : 'organizer_image_path';
+    const altField = slot === 'hero' ? 'cover_image_alt' : slot === 'content' ? 'content_image_alt' : 'organizer_image_alt';
     setForm((current) => ({
       ...current,
       [pathField]: result.path ?? '',
       [altField]: current[altField] || file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
     }));
-    toast({ title: `${slot === 'hero' ? 'Hero' : 'Middle'} image uploaded` });
+    toast({ title: `${slot === 'hero' ? 'Hero' : slot === 'content' ? 'Event detail' : 'Organiser'} image uploaded` });
   };
 
   const save = async () => {
     if (!editing) return;
     if (!form.title.trim() || !form.slug.trim()) {
       toast({ title: 'Title and slug are required', variant: 'destructive' });
+      return;
+    }
+    if (collection === 'events' && (!form.summary.trim() || !form.starts_at || !form.venue.trim() || !form.organizer_name.trim())) {
+      toast({ title: 'Complete the event summary, start date, venue and organiser', variant: 'destructive' });
       return;
     }
     const base = items.find((i) => i.id === editing.id) ?? {};
@@ -415,6 +501,29 @@ const ContentManager: React.FC<{
                 content_image_path: form.content_image_path || null,
                 content_image_alt: form.content_image_alt || null,
                 content_image_position: form.content_image_position,
+              }
+            : {}),
+          ...(collection === 'events'
+            ? {
+                summary: form.summary,
+                event_type: form.event_type,
+                starts_at: new Date(form.starts_at).toISOString(),
+                ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+                venue: form.venue,
+                island: form.island,
+                atoll: form.atoll,
+                audience: form.audience,
+                capacity: Number(form.capacity || 0),
+                fee: Number(form.fee || 0),
+                currency: form.currency || 'MVR',
+                registration_open: form.registration_open,
+                registration_deadline: form.registration_deadline ? new Date(form.registration_deadline).toISOString() : null,
+                member_only: form.member_only,
+                organizer_name: form.organizer_name,
+                organizer_details: form.organizer_details,
+                organizer_image_path: form.organizer_image_path || null,
+                organizer_image_alt: form.organizer_image_alt || null,
+                partner_organization: form.organizer_name,
               }
             : {}),
           ...(bodyField ? { [bodyField]: form.body } : {}),
@@ -508,6 +617,90 @@ const ContentManager: React.FC<{
                   </select>
                 </div>
               </div>
+              {collection === 'events' && (
+                <div className="space-y-5 rounded-lg border border-brand/20 bg-brand-light/40 p-5">
+                  <div>
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand">Event template</p>
+                    <p className="mt-1 text-[13px] text-ink-soft">Complete these fields to keep every public event page consistent.</p>
+                  </div>
+                  <div>
+                    <FieldLabel htmlFor="cm-event-summary" required>Event summary</FieldLabel>
+                    <textarea id="cm-event-summary" rows={3} className={inputClass} value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} placeholder="A short introduction used on event cards and the home page." />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div>
+                      <FieldLabel htmlFor="cm-event-type">Event type</FieldLabel>
+                      <select id="cm-event-type" className={inputClass} value={form.event_type} onChange={(event) => setForm({ ...form, event_type: event.target.value })}>
+                        {['summit', 'forum', 'webinar', 'exhibition', 'training', 'meeting'].map((value) => <option key={value} value={value}>{titleCase(value)}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="cm-event-start" required>Starts</FieldLabel>
+                      <input id="cm-event-start" type="datetime-local" className={inputClass} value={form.starts_at} onChange={(event) => setForm({ ...form, starts_at: event.target.value })} />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="cm-event-end">Ends</FieldLabel>
+                      <input id="cm-event-end" type="datetime-local" className={inputClass} value={form.ends_at} onChange={(event) => setForm({ ...form, ends_at: event.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="sm:col-span-2">
+                      <FieldLabel htmlFor="cm-event-venue" required>Venue</FieldLabel>
+                      <input id="cm-event-venue" className={inputClass} value={form.venue} onChange={(event) => setForm({ ...form, venue: event.target.value })} placeholder="Venue name or online meeting details" />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="cm-event-audience">Audience</FieldLabel>
+                      <input id="cm-event-audience" className={inputClass} value={form.audience} onChange={(event) => setForm({ ...form, audience: event.target.value })} placeholder="Open to all businesses" />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="cm-event-island">Island</FieldLabel>
+                      <input id="cm-event-island" className={inputClass} value={form.island} onChange={(event) => setForm({ ...form, island: event.target.value })} />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="cm-event-atoll">Atoll</FieldLabel>
+                      <input id="cm-event-atoll" className={inputClass} value={form.atoll} onChange={(event) => setForm({ ...form, atoll: event.target.value })} />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="cm-event-capacity">Capacity</FieldLabel>
+                      <input id="cm-event-capacity" type="number" min="0" className={inputClass} value={form.capacity} onChange={(event) => setForm({ ...form, capacity: event.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-4">
+                    <div>
+                      <FieldLabel htmlFor="cm-event-fee">Fee</FieldLabel>
+                      <input id="cm-event-fee" type="number" min="0" step="0.01" className={inputClass} value={form.fee} onChange={(event) => setForm({ ...form, fee: event.target.value })} />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="cm-event-currency">Currency</FieldLabel>
+                      <input id="cm-event-currency" className={inputClass} value={form.currency} onChange={(event) => setForm({ ...form, currency: event.target.value.toUpperCase() })} />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <FieldLabel htmlFor="cm-event-deadline">Registration deadline</FieldLabel>
+                      <input id="cm-event-deadline" type="datetime-local" className={inputClass} value={form.registration_deadline} onChange={(event) => setForm({ ...form, registration_deadline: event.target.value })} />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-5">
+                    <label className="flex items-center gap-2 text-[13.5px] text-ink">
+                      <input type="checkbox" checked={form.registration_open} onChange={(event) => setForm({ ...form, registration_open: event.target.checked })} className="h-4 w-4 rounded border-surface-border text-brand focus:ring-brand" />
+                      Registration open
+                    </label>
+                    <label className="flex items-center gap-2 text-[13.5px] text-ink">
+                      <input type="checkbox" checked={form.member_only} onChange={(event) => setForm({ ...form, member_only: event.target.checked })} className="h-4 w-4 rounded border-surface-border text-brand focus:ring-brand" />
+                      Members only
+                    </label>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <FieldLabel htmlFor="cm-organizer-name" required>Organiser name</FieldLabel>
+                      <input id="cm-organizer-name" className={inputClass} value={form.organizer_name} onChange={(event) => setForm({ ...form, organizer_name: event.target.value })} placeholder="Organisation or event host" />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="cm-organizer-details">Organiser details</FieldLabel>
+                      <textarea id="cm-organizer-details" rows={3} className={inputClass} value={form.organizer_details} onChange={(event) => setForm({ ...form, organizer_details: event.target.value })} placeholder="Role, background, contact or partnership information" />
+                    </div>
+                  </div>
+                </div>
+              )}
               {bodyFieldByCollection[collection] && (
                 <div>
                   <FieldLabel htmlFor="cm-body">Article body</FieldLabel>
@@ -519,23 +712,26 @@ const ContentManager: React.FC<{
                 </div>
               )}
               {supportsImages && (
-                <div className="grid gap-5 border-y border-surface-border py-5 sm:grid-cols-2">
-                  {(['hero', 'content'] as const).map((slot) => {
+                <div className={`grid gap-5 border-y border-surface-border py-5 ${collection === 'events' ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                  {(collection === 'events' ? (['hero', 'content', 'organizer'] as const) : (['hero', 'content'] as const)).map((slot) => {
                     const isHero = slot === 'hero';
-                    const pathField = isHero ? 'cover_image_path' : 'content_image_path';
-                    const altField = isHero ? 'cover_image_alt' : 'content_image_alt';
+                    const isOrganizer = slot === 'organizer';
+                    const pathField = isHero ? 'cover_image_path' : isOrganizer ? 'organizer_image_path' : 'content_image_path';
+                    const altField = isHero ? 'cover_image_alt' : isOrganizer ? 'organizer_image_alt' : 'content_image_alt';
                     const positionField = isHero ? 'cover_image_position' : 'content_image_position';
                     const imageUrl = publicMediaUrl(form[pathField]);
                     return (
                       <div key={slot}>
-                        <FieldLabel htmlFor={`cm-${slot}-image`}>{isHero ? 'Hero image' : 'Middle section image'}</FieldLabel>
+                        <FieldLabel htmlFor={`cm-${slot}-image`}>
+                          {isHero ? 'Hero image' : isOrganizer ? 'Organiser image or logo' : collection === 'events' ? 'Event details image' : 'Middle section image'}
+                        </FieldLabel>
                         <div className="mb-3 flex h-36 items-center justify-center overflow-hidden rounded-md border border-surface-border bg-surface-page">
                           {imageUrl ? (
                             <img
                               src={imageUrl}
                               alt={form[altField]}
                               className="h-full w-full object-cover"
-                              style={{ objectPosition: form[positionField] }}
+                              style={{ objectPosition: isOrganizer ? 'center' : form[positionField] }}
                             />
                           ) : (
                             <ImageIcon className="h-8 w-8 text-ink-muted" aria-hidden="true" />
@@ -563,17 +759,19 @@ const ContentManager: React.FC<{
                             placeholder="Describe the image"
                           />
                         </div>
-                        <div className="mt-3">
-                          <FieldLabel htmlFor={`cm-${slot}-position`}>Image focus</FieldLabel>
-                          <select
-                            id={`cm-${slot}-position`}
-                            className={inputClass}
-                            value={form[positionField]}
-                            onChange={(event) => setForm({ ...form, [positionField]: event.target.value })}
-                          >
-                            {imagePositions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                          </select>
-                        </div>
+                        {!isOrganizer && (
+                          <div className="mt-3">
+                            <FieldLabel htmlFor={`cm-${slot}-position`}>Image focus</FieldLabel>
+                            <select
+                              id={`cm-${slot}-position`}
+                              className={inputClass}
+                              value={form[positionField]}
+                              onChange={(event) => setForm({ ...form, [positionField]: event.target.value })}
+                            >
+                              {imagePositions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                            </select>
+                          </div>
+                        )}
                         {form[pathField] && (
                           <button
                             type="button"

@@ -371,6 +371,28 @@ export const EventDetailPage: React.FC = () => {
                 position: event.content_image_position,
               }}
             />
+            {(event.organizer_name || event.partner_organization) && (
+              <Card className="mt-8 overflow-hidden">
+                <div className="grid items-center gap-0 sm:grid-cols-[180px_1fr]">
+                  <div className="flex h-full min-h-40 items-center justify-center bg-surface-page p-5">
+                    {event.organizer_image_path ? (
+                      <img
+                        src={publicMediaUrl(event.organizer_image_path)}
+                        alt={event.organizer_image_alt ?? event.organizer_name ?? 'Event organiser'}
+                        className="max-h-28 max-w-full object-contain"
+                      />
+                    ) : (
+                      <Users className="h-10 w-10 text-brand/50" aria-hidden="true" />
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">Organised by</p>
+                    <h2 className="mt-2 text-xl font-semibold text-ink">{event.organizer_name ?? event.partner_organization}</h2>
+                    {event.organizer_details && <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">{event.organizer_details}</p>}
+                  </div>
+                </div>
+              </Card>
+            )}
             <DemoNotice className="mt-8" />
           </div>
           <aside className="space-y-4 lg:col-span-4">

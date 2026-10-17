@@ -56,7 +56,7 @@ export async function uploadPublicImage(
   file: File,
   collection: 'news' | 'events' | 'publications' | 'policy' | 'councils',
   recordId: string,
-  slot: 'hero' | 'content',
+  slot: 'hero' | 'content' | 'organizer',
 ): Promise<{ path: string | null; error: string | null }> {
   if (!file.type.startsWith('image/')) return { path: null, error: 'Please choose an image file.' };
   if (file.size > 8 * 1024 * 1024) return { path: null, error: 'Images must be 8 MB or smaller.' };

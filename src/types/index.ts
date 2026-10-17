@@ -250,6 +250,10 @@ export interface McciEvent {
   content_image_path?: string;
   content_image_alt?: string;
   content_image_position?: string;
+  organizer_name?: string;
+  organizer_details?: string;
+  organizer_image_path?: string;
+  organizer_image_alt?: string;
   starts_at: string;
   ends_at: string;
   venue: string;

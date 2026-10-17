@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   ArrowRight,
   BadgeCheck,
@@ -7,6 +8,7 @@ import {
   Globe2,
   Handshake,
   Mail,
+  MapPin,
   Newspaper,
   Phone,
   Scale,
@@ -27,6 +29,8 @@ import { usePageMeta } from '@/components/layout/PublicLayout';
 import { LOGO_URL, siteConfig } from '@/lib/config';
 import { formatDate } from '@/lib/utils/format';
 import { membershipTiers, newsPosts, partners } from '@/data/mockSeed';
+import { dataProvider } from '@/lib/data/provider';
+import { publicMediaUrl } from '@/lib/supabase';
 
 const UnderDevelopmentPanel: React.FC<{ text: string; className?: string }> = ({ text, className }) => (
   <Card className={`flex min-h-44 flex-col items-center justify-center p-8 text-center ${className ?? ''}`}>
@@ -90,6 +94,12 @@ const AppLayout: React.FC = () => {
 
   const featuredNews = newsPosts[0];
   const otherNews = newsPosts.slice(1, 4);
+  const { data: homeEvents = [] } = useQuery({ queryKey: ['events'], queryFn: () => dataProvider.events() });
+  const publishedEvents = homeEvents
+    .filter((event) => event.status === 'published')
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  const latestEvent = publishedEvents.find((event) => new Date(event.starts_at).getTime() >= Date.now())
+    ?? publishedEvents[publishedEvents.length - 1];
 
   return (
     <>
@@ -288,11 +298,53 @@ const AppLayout: React.FC = () => {
         <Container>
           <SectionHeading
             eyebrow="Events"
-            title="Upcoming engagement"
-            description="The current MNCCI events programme is being prepared for publication."
+            title="Latest event"
+            description="The newest published chamber event, with registration and organiser information."
             action={<ButtonLink to="/events" variant="outline">Events calendar</ButtonLink>}
           />
-          <UnderDevelopmentPanel text="Approved event dates, venues and registration information will appear here." />
+          {latestEvent ? (
+            <Card className="overflow-hidden">
+              <div className="grid lg:grid-cols-12">
+                <div className="relative min-h-64 overflow-hidden bg-gradient-to-br from-brand-deep to-brand lg:col-span-5">
+                  {latestEvent.cover_image_path ? (
+                    <img
+                      src={publicMediaUrl(latestEvent.cover_image_path)}
+                      alt={latestEvent.cover_image_alt ?? latestEvent.title}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      style={{ objectPosition: latestEvent.cover_image_position ?? 'center' }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <CalendarDays className="h-16 w-16 text-white/55" aria-hidden="true" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/75 via-transparent to-transparent" aria-hidden="true" />
+                  <span className="absolute left-5 top-5"><Badge status="published" label={latestEvent.event_type} /></span>
+                </div>
+                <div className="p-7 sm:p-9 lg:col-span-7">
+                  <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">
+                    {formatDate(latestEvent.starts_at)}
+                  </p>
+                  <h3 className="mt-3 text-[25px] font-semibold leading-tight text-ink">
+                    <Link to={`/events/${latestEvent.slug}`} className="hover:text-brand">{latestEvent.title}</Link>
+                  </h3>
+                  <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">{latestEvent.summary}</p>
+                  <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-ink-soft">
+                    <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-brand" aria-hidden="true" />{latestEvent.venue}</span>
+                    {(latestEvent.organizer_name || latestEvent.partner_organization) && (
+                      <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-brand" aria-hidden="true" />{latestEvent.organizer_name ?? latestEvent.partner_organization}</span>
+                    )}
+                  </div>
+                  <Link to={`/events/${latestEvent.slug}`} className="mt-7 inline-flex items-center gap-2 text-[14px] font-semibold text-brand hover:text-brand-dark">
+                    View event details
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <UnderDevelopmentPanel text="Approved event dates, venues and registration information will appear here." />
+          )}
         </Container>
       </section>
 
