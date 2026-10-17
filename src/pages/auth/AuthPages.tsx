@@ -12,7 +12,7 @@ import {
 } from '@/components/common/ui';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { DEMO_ACCOUNTS, isMockMode, siteConfig } from '@/lib/config';
+import { DEMO_ACCOUNTS, siteConfig } from '@/lib/config';
 import { usePageMeta } from '@/components/layout/PublicLayout';
 
 const AuthShell: React.FC<{ title: string; subtitle: string; children: React.ReactNode; footer?: React.ReactNode }> = ({
@@ -69,7 +69,6 @@ const AuthShell: React.FC<{ title: string; subtitle: string; children: React.Rea
 
 const DemoPanel: React.FC<{ onUse: (email: string, password: string) => void }> = ({ onUse }) => {
   const [open, setOpen] = useState(true);
-  if (!isMockMode) return null;
   return (
     <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50">
       <button
@@ -78,7 +77,7 @@ const DemoPanel: React.FC<{ onUse: (email: string, password: string) => void }> 
         aria-expanded={open}
         className="flex w-full items-center justify-between px-4 py-3 text-left text-[13px] font-semibold text-[#7a5312]"
       >
-        Demo login details (mock mode)
+        Demo portal access
         <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
       {open && (
@@ -95,12 +94,12 @@ const DemoPanel: React.FC<{ onUse: (email: string, password: string) => void }> 
                 onClick={() => onUse(account.email, account.password)}
                 className="shrink-0 rounded border border-brand/30 bg-brand-light px-2.5 py-1 text-[11px] font-semibold text-brand-dark hover:bg-brand hover:text-white"
               >
-                Use
+                Sign in
               </button>
             </div>
           ))}
           <p className="pt-1 text-[11px] leading-relaxed text-[#7a5312]">
-            These demonstration credentials exist only in mock mode and must never be used in production.
+            Demo accounts open an isolated preview session. They do not sign in to or change live account records.
           </p>
         </div>
       )}
@@ -119,10 +118,9 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const completeSignIn = async (loginEmail: string, loginPassword: string) => {
     setLoading(true);
-    const result = await signIn(email, password);
+    const result = await signIn(loginEmail, loginPassword);
     setLoading(false);
     if (result.error) {
       setError(result.error);
@@ -130,8 +128,13 @@ export const LoginPage: React.FC = () => {
     }
     setError('');
     toast({ title: 'Signed in', description: 'Welcome back to the MNCCI platform.' });
-    const isAdminAccount = email.startsWith('admin') || email.startsWith('editor');
+    const isAdminAccount = loginEmail.startsWith('admin') || loginEmail.startsWith('editor');
     navigate(from ?? (isAdminAccount ? '/admin' : '/portal'), { replace: true });
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await completeSignIn(email, password);
   };
 
   return (
@@ -170,6 +173,7 @@ export const LoginPage: React.FC = () => {
         onUse={(e, p) => {
           setEmail(e);
           setPassword(p);
+          void completeSignIn(e, p);
         }}
       />
     </AuthShell>

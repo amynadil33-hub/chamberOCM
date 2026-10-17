@@ -66,6 +66,7 @@ export function validateEnvironment(): string[] {
 
 export const isMockMode = envConfig.dataMode === 'mock';
 export const isDatabaseMode = envConfig.dataMode === 'database';
+export const DEMO_SESSION_STORAGE_KEY = 'mcci.mock.session.v1';
 
 export const LOGO_URL = '/mcci-logo.png';
 

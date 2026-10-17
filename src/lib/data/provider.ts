@@ -1,4 +1,4 @@
-import { envConfig } from '@/lib/config';
+import { DEMO_SESSION_STORAGE_KEY, envConfig } from '@/lib/config';
 import { databaseDataProvider } from '@/lib/data/databaseProvider';
 
 import {
@@ -499,11 +499,31 @@ const mockProvider: DataProvider = {
  * In every other case the mock provider keeps the preview fully usable.
  */
 export function getDataProvider(): DataProvider {
+  try {
+    if (typeof window !== 'undefined') {
+      const raw = window.localStorage.getItem(DEMO_SESSION_STORAGE_KEY);
+      if (raw) {
+        const stored = JSON.parse(raw) as AuthUser;
+        const validDemoSession = demoUsers.some(
+          (candidate) => candidate.id === stored.id && candidate.email === stored.email,
+        );
+        if (validDemoSession) return mockProvider;
+      }
+    }
+  } catch {
+    // Storage can be unavailable in hardened browser contexts; use the configured provider.
+  }
   if (envConfig.dataMode === 'database' && databaseDataProvider) {
     return databaseDataProvider;
   }
   return mockProvider;
 }
 
-export const dataProvider = getDataProvider();
+export const dataProvider: DataProvider = new Proxy(mockProvider, {
+  get: (_target, property) => {
+    const activeProvider = getDataProvider() as unknown as Record<PropertyKey, unknown>;
+    const value = activeProvider[property];
+    return typeof value === 'function' ? value.bind(activeProvider) : value;
+  },
+});
 export { mockProvider };

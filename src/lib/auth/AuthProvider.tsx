@@ -1,12 +1,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { demoUsers } from '@/data/mockSeed';
-import { envConfig, isDatabaseMode } from '@/lib/config';
+import { DEMO_SESSION_STORAGE_KEY, envConfig, isDatabaseMode } from '@/lib/config';
 import { supabase } from '@/lib/supabase';
 import { TABLES } from '@/lib/data/databaseProvider';
 import type { AppRole, AuthUser } from '@/types';
-
-const SESSION_KEY = 'mcci.mock.session.v1';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -65,6 +63,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let active = true;
 
+    try {
+      const raw = window.localStorage.getItem(DEMO_SESSION_STORAGE_KEY);
+      if (raw) {
+        const stored = JSON.parse(raw) as AuthUser;
+        const demoAccount = demoUsers.find((candidate) => candidate.id === stored.id && candidate.email === stored.email);
+        if (demoAccount) {
+          const { password: _password, ...canonicalSession } = demoAccount;
+          setUser(canonicalSession);
+          window.localStorage.setItem(DEMO_SESSION_STORAGE_KEY, JSON.stringify(canonicalSession));
+          setLoading(false);
+          return () => {
+            active = false;
+          };
+        }
+        if (!isDatabaseMode) {
+          setUser(stored);
+          setLoading(false);
+          return () => {
+            active = false;
+          };
+        }
+        window.localStorage.removeItem(DEMO_SESSION_STORAGE_KEY);
+      }
+    } catch {
+      window.localStorage.removeItem(DEMO_SESSION_STORAGE_KEY);
+    }
+
     if (isDatabaseMode && supabase) {
       supabase.auth
         .getSession()
@@ -98,7 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const raw = window.localStorage.getItem(SESSION_KEY);
+      const raw = window.localStorage.getItem(DEMO_SESSION_STORAGE_KEY);
       if (raw) setUser(JSON.parse(raw) as AuthUser);
     } catch {
       setUser(null);
@@ -111,6 +136,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   /* --------------------------------- sign in ------------------------------ */
   const signIn = useCallback(async (email: string, password: string) => {
+    const demoMatch = demoUsers.find(
+      (candidate) => candidate.email.toLowerCase() === email.trim().toLowerCase() && candidate.password === password,
+    );
+    if (demoMatch) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      if (isDatabaseMode && supabase) await supabase.auth.signOut();
+      const { password: _password, ...session } = demoMatch;
+      setUser(session);
+      window.localStorage.setItem(DEMO_SESSION_STORAGE_KEY, JSON.stringify(session));
+      return {};
+    }
+
     if (isDatabaseMode && supabase) {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -124,17 +161,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return {};
     }
 
-    await new Promise((r) => setTimeout(r, 350));
-    const match = demoUsers.find(
-      (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password,
-    );
-    if (!match) {
-      return { error: 'Those credentials were not recognised. Check the email address and password.' };
-    }
-    const { password: _pw, ...session } = match;
-    setUser(session);
-    window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    return {};
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    return { error: 'Those credentials were not recognised. Check the email address and password.' };
   }, []);
 
   /* --------------------------------- sign up ------------------------------ */
@@ -177,7 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       role: 'member',
     };
     setUser(session);
-    window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    window.localStorage.setItem(DEMO_SESSION_STORAGE_KEY, JSON.stringify(session));
     return {};
   }, []);
 
@@ -187,7 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       void supabase.auth.signOut();
     }
     setUser(null);
-    window.localStorage.removeItem(SESSION_KEY);
+    window.localStorage.removeItem(DEMO_SESSION_STORAGE_KEY);
   }, []);
 
   /* ----------------------------- password reset --------------------------- */

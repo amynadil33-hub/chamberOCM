@@ -119,7 +119,7 @@ const AppLayout: React.FC = () => {
         <Container className="relative py-16 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-12">
             <div className="lg:col-span-7">
-              <span className="hero-rise inline-flex items-center gap-2 rounded-full border border-cyan-100/25 bg-white/10 px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-cyan-50 backdrop-blur-sm">
+              <span className="hero-rise inline-flex items-center gap-2 rounded-full border border-cyan-100/35 bg-brand-deep/30 px-4 py-2 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_24px_rgba(6,23,54,0.18)] backdrop-blur-sm sm:text-[13px]">
                 <Globe2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Maldives National Chamber of Commerce &amp; Industry
               </span>
