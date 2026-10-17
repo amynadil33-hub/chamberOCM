@@ -235,8 +235,11 @@ interface ContentRecord {
   seo_title?: string;
   seo_description?: string;
   cover_image_path?: string;
+  hero_image_path?: string;
   cover_image_alt?: string;
   cover_image_position?: string;
+  hero_image_alt?: string;
+  hero_image_position?: string;
   content_image_path?: string;
   content_image_alt?: string;
   content_image_position?: string;
@@ -300,6 +303,11 @@ const detailQueryKeyByCollection: Partial<Record<ContentCollection, string>> = {
   councils: 'council',
 };
 
+const imageArticleCollections = ['news', 'events', 'publications', 'policy', 'councils'] as const;
+type ImageArticleCollection = (typeof imageArticleCollections)[number];
+const isImageArticleCollection = (value: ContentCollection): value is ImageArticleCollection =>
+  imageArticleCollections.includes(value as ImageArticleCollection);
+
 const newRecordDefaults = (collection: ContentCollection): Record<string, unknown> => {
   switch (collection) {
     case 'events':
@@ -331,7 +339,7 @@ const ContentManager: React.FC<{
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<'hero' | 'content' | null>(null);
   const [form, setForm] = useState<ContentFormState>(emptyContentForm);
-  const supportsImages = collection === 'news' || collection === 'publications';
+  const supportsImages = isImageArticleCollection(collection);
 
   const openNew = () => {
     setEditing({ id: crypto.randomUUID() });
@@ -348,9 +356,9 @@ const ContentManager: React.FC<{
       seo_description: record.seo_description ?? '',
       body: record.body_markdown ?? record.description_markdown ?? record.full_description_markdown ?? '',
       featured: Boolean(record.featured),
-      cover_image_path: record.cover_image_path ?? '',
-      cover_image_alt: record.cover_image_alt ?? '',
-      cover_image_position: record.cover_image_position ?? 'center',
+      cover_image_path: record.cover_image_path ?? record.hero_image_path ?? '',
+      cover_image_alt: record.cover_image_alt ?? record.hero_image_alt ?? '',
+      cover_image_position: record.cover_image_position ?? record.hero_image_position ?? 'center',
       content_image_path: record.content_image_path ?? '',
       content_image_alt: record.content_image_alt ?? '',
       content_image_position: record.content_image_position ?? 'center',
@@ -358,7 +366,7 @@ const ContentManager: React.FC<{
   };
 
   const uploadImage = async (slot: 'hero' | 'content', file?: File) => {
-    if (!file || !editing || !supportsImages) return;
+    if (!file || !editing || !isImageArticleCollection(collection)) return;
     setUploading(slot);
     const result = await uploadPublicImage(file, collection, editing.id, slot);
     setUploading(null);

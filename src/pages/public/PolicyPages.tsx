@@ -18,6 +18,7 @@ import {
 import { usePageMeta } from '@/components/layout/PublicLayout';
 import { dataProvider } from '@/lib/data/provider';
 import { formatDate } from '@/lib/utils/format';
+import { publicMediaUrl } from '@/lib/supabase';
 
 const PolicyProgress: React.FC<{ percent: number }> = ({ percent }) => (
   <div className="w-full">
@@ -223,11 +224,21 @@ export const PolicyDetailPage: React.FC = () => {
           { label: 'Positions', to: '/policy/positions' },
           { label: item.title },
         ]}
+        imageUrl={publicMediaUrl(item.cover_image_path)}
+        imageAlt={item.cover_image_alt}
+        imagePosition={item.cover_image_position}
       />
       <Container className="py-14">
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            <Markdown content={item.body_markdown} />
+            <Markdown
+              content={item.body_markdown}
+              contentImage={{
+                src: publicMediaUrl(item.content_image_path),
+                alt: item.content_image_alt,
+                position: item.content_image_position,
+              }}
+            />
           </div>
           <aside className="space-y-4 lg:col-span-4">
             <Card className="p-6">

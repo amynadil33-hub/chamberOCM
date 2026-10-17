@@ -23,6 +23,7 @@ import { dataProvider } from '@/lib/data/provider';
 import { councils } from '@/data/mockSeed';
 import { formatCurrency, formatDate, formatDateTime, isUpcoming } from '@/lib/utils/format';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { publicMediaUrl } from '@/lib/supabase';
 
 const eventTypes = ['summit', 'forum', 'webinar', 'exhibition', 'training', 'meeting'];
 
@@ -330,6 +331,9 @@ export const EventDetailPage: React.FC = () => {
         title={event.title}
         description={event.summary}
         breadcrumbs={[{ label: 'Events', to: '/events' }, { label: event.title }]}
+        imageUrl={publicMediaUrl(event.cover_image_path)}
+        imageAlt={event.cover_image_alt}
+        imagePosition={event.cover_image_position}
       />
       <Container className="py-14">
         <div className="grid gap-8 lg:grid-cols-12">
@@ -359,7 +363,14 @@ export const EventDetailPage: React.FC = () => {
                 </div>
               </Card>
             )}
-            <Markdown content={event.description_markdown} />
+            <Markdown
+              content={event.description_markdown}
+              contentImage={{
+                src: publicMediaUrl(event.content_image_path),
+                alt: event.content_image_alt,
+                position: event.content_image_position,
+              }}
+            />
             <DemoNotice className="mt-8" />
           </div>
           <aside className="space-y-4 lg:col-span-4">

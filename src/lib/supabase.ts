@@ -54,7 +54,7 @@ export function publicMediaUrl(path?: string | null): string | undefined {
 /** Upload an editor-selected image. Demo mode uses a data URL so preview remains functional. */
 export async function uploadPublicImage(
   file: File,
-  collection: 'news' | 'publications',
+  collection: 'news' | 'events' | 'publications' | 'policy' | 'councils',
   recordId: string,
   slot: 'hero' | 'content',
 ): Promise<{ path: string | null; error: string | null }> {

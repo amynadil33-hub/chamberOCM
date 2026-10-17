@@ -17,6 +17,7 @@ import {
 import { usePageMeta } from '@/components/layout/PublicLayout';
 import { dataProvider } from '@/lib/data/provider';
 import { formatDate, isUpcoming } from '@/lib/utils/format';
+import { publicMediaUrl } from '@/lib/supabase';
 
 const icons: Record<string, React.ElementType> = { Cpu, Palmtree, HardHat, Fish, Ship };
 
@@ -129,6 +130,9 @@ export const CouncilDetailPage: React.FC = () => {
         title={council.name}
         description={council.short_description}
         breadcrumbs={[{ label: 'Councils', to: '/councils' }, { label: council.name }]}
+        imageUrl={publicMediaUrl(council.cover_image_path ?? council.hero_image_path)}
+        imageAlt={council.hero_image_alt}
+        imagePosition={council.hero_image_position}
       >
         <div className="flex flex-wrap gap-3">
           <Link
@@ -150,7 +154,14 @@ export const CouncilDetailPage: React.FC = () => {
       <Container className="py-14">
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            <Markdown content={council.full_description_markdown} />
+            <Markdown
+              content={council.full_description_markdown}
+              contentImage={{
+                src: publicMediaUrl(council.content_image_path),
+                alt: council.content_image_alt,
+                position: council.content_image_position,
+              }}
+            />
 
             <SectionHeading className="mt-12" title="Objectives" />
             <ul className="grid gap-3 sm:grid-cols-2">

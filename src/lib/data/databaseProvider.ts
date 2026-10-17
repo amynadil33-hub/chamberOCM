@@ -76,7 +76,8 @@ const contentColumns: Record<ContentCollection, readonly string[]> = {
   ],
   events: [
     'id', 'council_id', 'title', 'slug', 'event_type', 'summary', 'description_markdown',
-    'cover_image_path', 'starts_at', 'ends_at', 'venue', 'island', 'atoll', 'online_url',
+    'cover_image_path', 'cover_image_alt', 'cover_image_position', 'content_image_path',
+    'content_image_alt', 'content_image_position', 'starts_at', 'ends_at', 'venue', 'island', 'atoll', 'online_url',
     'audience', 'capacity', 'fee', 'currency', 'registration_open',
     'registration_deadline', 'member_only', 'status', 'featured', 'is_demo',
   ],
@@ -88,6 +89,8 @@ const contentColumns: Record<ContentCollection, readonly string[]> = {
   ],
   policy: [
     'id', 'title', 'slug', 'category', 'reference_number', 'summary', 'body_markdown',
+    'cover_image_path', 'cover_image_alt', 'cover_image_position', 'content_image_path',
+    'content_image_alt', 'content_image_position',
     'position_status', 'progress_percent', 'supporting_file_path', 'status', 'published_at',
     'featured', 'is_demo',
   ],
@@ -102,7 +105,8 @@ const contentColumns: Record<ContentCollection, readonly string[]> = {
   partners: ['id', 'name', 'slug', 'partner_type', 'logo_path', 'website', 'display_order', 'active', 'is_demo'],
   councils: [
     'id', 'name', 'slug', 'short_description', 'full_description_markdown', 'icon_name',
-    'hero_image_path', 'chair_name', 'chair_title', 'contact_email', 'member_count_display',
+    'hero_image_path', 'hero_image_alt', 'hero_image_position', 'content_image_path',
+    'content_image_alt', 'content_image_position', 'chair_name', 'chair_title', 'contact_email', 'member_count_display',
     'established_year', 'objectives', 'policy_priorities', 'status', 'display_order', 'is_demo',
   ],
   notices: ['id', 'title', 'body_markdown', 'audience_type', 'published_at', 'expires_at', 'status'],
@@ -121,6 +125,11 @@ function contentPayload(collection: ContentCollection, record: Record<string, un
     if (collection === 'events' || collection === 'publications' || collection === 'msme') {
       normalized.description_markdown = normalized.body_markdown;
     }
+  }
+  if (collection === 'councils' && normalized.cover_image_path !== undefined) {
+    normalized.hero_image_path = normalized.cover_image_path;
+    normalized.hero_image_alt = normalized.cover_image_alt;
+    normalized.hero_image_position = normalized.cover_image_position;
   }
   if (collection === 'events') normalized.starts_at ??= normalized.published_at ?? new Date().toISOString();
   if (collection === 'submissions') {
@@ -243,6 +252,12 @@ const mapCouncil = (r: Row): Council => ({
   short_description: str(r.short_description),
   full_description_markdown: str(r.full_description_markdown),
   icon_name: str(r.icon_name),
+  hero_image_path: str(r.hero_image_path) || undefined,
+  hero_image_alt: str(r.hero_image_alt) || undefined,
+  hero_image_position: str(r.hero_image_position, 'center'),
+  content_image_path: str(r.content_image_path) || undefined,
+  content_image_alt: str(r.content_image_alt) || undefined,
+  content_image_position: str(r.content_image_position, 'center'),
   chair_name: str(r.chair_name),
   chair_title: str(r.chair_title),
   contact_email: str(r.contact_email),
@@ -315,6 +330,12 @@ const mapEvent = (r: Row): McciEvent => ({
   event_type: str(r.event_type, 'forum') as McciEvent['event_type'],
   summary: str(r.summary),
   description_markdown: str(r.description_markdown),
+  cover_image_path: str(r.cover_image_path) || undefined,
+  cover_image_alt: str(r.cover_image_alt) || undefined,
+  cover_image_position: str(r.cover_image_position, 'center'),
+  content_image_path: str(r.content_image_path) || undefined,
+  content_image_alt: str(r.content_image_alt) || undefined,
+  content_image_position: str(r.content_image_position, 'center'),
   starts_at: str(r.starts_at),
   ends_at: str(r.ends_at),
   venue: str(r.venue),
@@ -389,6 +410,12 @@ const mapPolicy = (r: Row): PolicyItem => ({
   reference_number: str(r.reference_number),
   summary: str(r.summary),
   body_markdown: str(r.body_markdown),
+  cover_image_path: str(r.cover_image_path) || undefined,
+  cover_image_alt: str(r.cover_image_alt) || undefined,
+  cover_image_position: str(r.cover_image_position, 'center'),
+  content_image_path: str(r.content_image_path) || undefined,
+  content_image_alt: str(r.content_image_alt) || undefined,
+  content_image_position: str(r.content_image_position, 'center'),
   position_status: str(r.position_status),
   progress_percent: num(r.progress_percent),
   status: str(r.status, 'published') as PolicyItem['status'],
