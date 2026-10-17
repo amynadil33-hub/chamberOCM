@@ -179,17 +179,15 @@ export const NewsDetailPage: React.FC = () => {
               <span>{post.author_display_name}</span>
               {post.is_demo && <DemoBadge />}
             </div>
-            {post.content_image_path && (
-              <figure className="mt-8 overflow-hidden rounded-lg border border-surface-border bg-surface-page">
-                <img
-                  src={publicMediaUrl(post.content_image_path)}
-                  alt={post.content_image_alt ?? ''}
-                  className="aspect-[16/9] w-full object-cover"
-                  style={{ objectPosition: post.content_image_position ?? 'center' }}
-                />
-              </figure>
-            )}
-            <Markdown content={post.body_markdown} className="mt-2" />
+            <Markdown
+              content={post.body_markdown}
+              className="mt-2"
+              contentImage={{
+                src: publicMediaUrl(post.content_image_path),
+                alt: post.content_image_alt,
+                position: post.content_image_position,
+              }}
+            />
             {post.source_url && (
               <a
                 href={post.source_url}

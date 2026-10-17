@@ -239,17 +239,14 @@ export const PublicationDetailPage: React.FC = () => {
       <Container className="py-14">
         <div className="grid gap-8 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            {publication.content_image_path && (
-              <figure className="mb-8 overflow-hidden rounded-lg border border-surface-border bg-surface-page">
-                <img
-                  src={publicMediaUrl(publication.content_image_path)}
-                  alt={publication.content_image_alt ?? ''}
-                  className="aspect-[16/9] w-full object-cover"
-                  style={{ objectPosition: publication.content_image_position ?? 'center' }}
-                />
-              </figure>
-            )}
-            <Markdown content={publication.description_markdown} />
+            <Markdown
+              content={publication.description_markdown}
+              contentImage={{
+                src: publicMediaUrl(publication.content_image_path),
+                alt: publication.content_image_alt,
+                position: publication.content_image_position,
+              }}
+            />
             <DemoNotice className="mt-8" />
           </div>
           <aside className="lg:col-span-4">

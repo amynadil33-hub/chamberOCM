@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Inbox, Loader2 } from 'lucide-react';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 import { LOGO_URL, siteConfig } from '@/lib/config';
 import { cn } from '@/lib/utils';
-import { parseMarkdown, statusTone, stripEmphasis, titleCase, toneClasses } from '@/lib/utils/format';
+import { statusTone, titleCase, toneClasses } from '@/lib/utils/format';
 
 export const Logo: React.FC<{ className?: string; showText?: boolean; variant?: 'light' | 'dark' }> = ({
   className,
@@ -227,52 +229,49 @@ export const SkeletonList: React.FC<{ rows?: number }> = ({ rows = 3 }) => (
   </div>
 );
 
-export const Markdown: React.FC<{ content: string; className?: string }> = ({ content, className }) => {
-  const blocks = parseMarkdown(content);
-  const out: React.ReactNode[] = [];
-  let bullets: string[] = [];
+interface ArticleImage {
+  src?: string;
+  alt?: string;
+  position?: string;
+}
 
-  const flush = (key: string) => {
-    if (bullets.length) {
-      out.push(
-        <ul key={key} className="my-4 list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-ink-soft">
-          {bullets.map((b, i) => (
-            <li key={i}>{stripEmphasis(b)}</li>
-          ))}
-        </ul>,
-      );
-      bullets = [];
-    }
-  };
+const containsHtml = (value: string) => /<\/?[a-z][\s\S]*>/i.test(value);
 
-  blocks.forEach((block, index) => {
-    if (block.type === 'li') {
-      bullets.push(block.text);
-      return;
-    }
-    flush(`ul-${index}`);
-    if (block.type === 'h2')
-      out.push(
-        <h2 key={index} className="mt-8 text-xl font-semibold text-ink">
-          {stripEmphasis(block.text)}
-        </h2>,
-      );
-    else if (block.type === 'h3')
-      out.push(
-        <h3 key={index} className="mt-6 text-lg font-semibold text-ink">
-          {stripEmphasis(block.text)}
-        </h3>,
-      );
-    else
-      out.push(
-        <p key={index} className="mt-4 text-[15px] leading-relaxed text-ink-soft">
-          {stripEmphasis(block.text)}
-        </p>,
-      );
-  });
-  flush('ul-final');
+const escapeAttribute = (value: string) =>
+  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-  return <div className={cn('max-w-3xl', className)}>{out}</div>;
+const insertArticleImage = (html: string, image?: ArticleImage) => {
+  if (!image?.src) return html;
+  const safePosition = /^(?:center|top|bottom|left|right)$/.test(image.position ?? '') ? image.position : 'center';
+  const figure = `<figure class="article-content-image"><img src="${escapeAttribute(image.src)}" alt="${escapeAttribute(image.alt ?? '')}" style="object-position:${safePosition}"></figure>`;
+  const paragraphEnds = [...html.matchAll(/<\/p\s*>/gi)];
+  if (!paragraphEnds.length) return `${figure}${html}`;
+  const target = paragraphEnds[Math.max(0, Math.ceil(paragraphEnds.length / 2) - 1)];
+  const insertionPoint = (target.index ?? 0) + target[0].length;
+  return `${html.slice(0, insertionPoint)}${figure}${html.slice(insertionPoint)}`;
+};
+
+export const Markdown: React.FC<{ content: string; className?: string; contentImage?: ArticleImage }> = ({
+  content,
+  className,
+  contentImage,
+}) => {
+  const html = useMemo(() => {
+    const rendered = containsHtml(content) ? content : String(marked.parse(content));
+    return DOMPurify.sanitize(insertArticleImage(rendered, contentImage), {
+      ADD_ATTR: ['target'],
+    });
+  }, [content, contentImage]);
+
+  return (
+    <div
+      className={cn(
+        'prose prose-slate max-w-3xl prose-headings:text-ink prose-p:text-ink-soft prose-li:text-ink-soft prose-a:text-brand prose-a:no-underline hover:prose-a:underline prose-blockquote:border-brand/30 prose-blockquote:text-ink-soft [&_.article-content-image]:my-8 [&_.article-content-image]:overflow-hidden [&_.article-content-image]:rounded-lg [&_.article-content-image]:border [&_.article-content-image]:border-surface-border [&_.article-content-image]:bg-surface-page [&_.article-content-image_img]:aspect-[16/9] [&_.article-content-image_img]:w-full [&_.article-content-image_img]:object-cover',
+        className,
+      )}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 };
 
 export const StatBlock: React.FC<{ value: string; label: string; note?: string; light?: boolean }> = ({

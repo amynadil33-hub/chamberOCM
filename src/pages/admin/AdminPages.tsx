@@ -10,8 +10,10 @@ import {
   DemoNotice,
   EmptyState,
   FieldLabel,
+  Markdown,
   inputClass,
 } from '@/components/common/ui';
+import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { dataProvider, type ContentCollection } from '@/lib/data/provider';
@@ -479,7 +481,7 @@ const ContentManager: React.FC<{
 
       {editing && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-brand-deep/50 p-4" role="dialog" aria-modal="true" aria-label="Edit content">
-          <Card className="my-8 w-full max-w-2xl p-6">
+          <Card className="my-8 w-full max-w-4xl p-6">
             <h2 className="text-[18px] font-semibold text-ink">Edit content record</h2>
             <div className="mt-5 space-y-4">
               <div>
@@ -500,8 +502,12 @@ const ContentManager: React.FC<{
               </div>
               {bodyFieldByCollection[collection] && (
                 <div>
-                  <FieldLabel htmlFor="cm-body">Body (Markdown)</FieldLabel>
-                  <textarea id="cm-body" rows={7} className={`${inputClass} font-mono text-[13px]`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="## Heading&#10;&#10;Body text…" />
+                  <FieldLabel htmlFor="cm-body">Article body</FieldLabel>
+                  <RichTextEditor
+                    id="cm-body"
+                    value={form.body}
+                    onChange={(body) => setForm((current) => ({ ...current, body }))}
+                  />
                 </div>
               )}
               {supportsImages && (
@@ -591,7 +597,7 @@ const ContentManager: React.FC<{
               <div className="rounded-md border border-surface-border bg-surface-page p-4">
                 <p className="text-[12px] uppercase tracking-wider text-ink-muted">Preview</p>
                 <p className="mt-1 text-[16px] font-semibold text-ink">{form.title || 'Untitled record'}</p>
-                <p className="mt-1 whitespace-pre-wrap text-[13px] text-ink-soft">{form.body || 'No body content yet.'}</p>
+                {form.body ? <Markdown content={form.body} className="mt-2" /> : <p className="mt-1 text-[13px] text-ink-soft">No body content yet.</p>}
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
