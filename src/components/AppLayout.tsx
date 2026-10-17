@@ -151,28 +151,61 @@ const AppLayout: React.FC = () => {
             </div>
 
             <div className="hero-rise hero-delay-2 lg:col-span-5">
-              <div className="hero-float relative mx-auto max-w-sm rounded-[1.75rem] border border-white/20 bg-white/[0.11] p-8 shadow-[0_30px_80px_rgba(8,20,58,0.30)] backdrop-blur-md">
-                <div className="absolute -right-3 -top-3 h-20 w-20 rounded-full border border-cyan-200/25" aria-hidden="true" />
-                <div className="absolute -bottom-5 -left-5 h-28 w-28 rounded-full border border-emerald-200/20" aria-hidden="true" />
-                <div className="flex justify-center">
-                  <img
-                    src={LOGO_URL}
-                    alt="Maldives National Chamber of Commerce & Industry official emblem"
-                    className="relative h-44 w-auto rounded-lg object-contain drop-shadow-[0_16px_24px_rgba(10,28,66,0.3)]"
-                    width={405}
-                    height={341}
-                  />
+              <div className="relative mx-auto max-w-[36rem] lg:ml-auto">
+                <div className="pointer-events-none absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-cyan-300/20 via-transparent to-emerald-300/20 blur-2xl" aria-hidden="true" />
+                <div className="relative grid grid-cols-2 gap-3 rounded-[2rem] border border-white/20 bg-white/[0.10] p-3 shadow-[0_32px_90px_rgba(8,20,58,0.36)] backdrop-blur-md">
+                  <figure className="group relative col-span-2 overflow-hidden rounded-[1.45rem] border border-white/15 bg-brand-deep shadow-lg">
+                    <img
+                      src="/images/home/maldives-trade-port.jpg"
+                      alt="Illustrated port, cargo terminal and city skyline representing Maldivian trade"
+                      className="aspect-[16/5] min-h-36 w-full object-cover transition duration-700 ease-out group-hover:scale-[1.035]"
+                      width={1920}
+                      height={600}
+                      fetchPriority="high"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/80 via-transparent to-transparent" aria-hidden="true" />
+                    <figcaption className="absolute bottom-0 left-0 p-4 text-[12px] font-semibold uppercase tracking-[0.14em] text-white">
+                      Trade &amp; logistics
+                    </figcaption>
+                  </figure>
+
+                  <figure className="group relative overflow-hidden rounded-[1.45rem] border border-white/15 bg-brand-deep shadow-lg">
+                    <img
+                      src="/images/home/maldives-island-connectivity.jpg"
+                      alt="Seaplanes connecting businesses and communities across the Maldives"
+                      className="aspect-[4/3] w-full object-cover transition duration-700 ease-out group-hover:scale-[1.045]"
+                      width={1920}
+                      height={1280}
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/85 via-brand-deep/5 to-transparent" aria-hidden="true" />
+                    <figcaption className="absolute bottom-0 left-0 p-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-white sm:text-[12px]">
+                      Connected islands
+                    </figcaption>
+                  </figure>
+
+                  <figure className="group relative overflow-hidden rounded-[1.45rem] border border-white/15 bg-brand-deep shadow-lg">
+                    <img
+                      src="/images/home/maldives-island-enterprise.jpg"
+                      alt="Maldivian island shoreline representing enterprise across the nation"
+                      className="aspect-[4/3] w-full object-cover transition duration-700 ease-out group-hover:scale-[1.045]"
+                      width={1917}
+                      height={1277}
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-deep/85 via-brand-deep/5 to-transparent" aria-hidden="true" />
+                    <figcaption className="absolute bottom-0 left-0 p-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-white sm:text-[12px]">
+                      Island enterprise
+                    </figcaption>
+                  </figure>
+
+                  <div className="absolute -right-3 -top-4 z-10 flex items-center gap-2 rounded-full border border-white/25 bg-white/90 py-1.5 pl-2 pr-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-deep shadow-xl backdrop-blur-md sm:text-[11px]">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm">
+                      <img src={LOGO_URL} alt="" className="h-7 w-7 object-contain" width={32} height={32} />
+                    </span>
+                    Commerce across the Maldives
+                  </div>
                 </div>
-                <p className="mt-6 text-center text-[13px] leading-relaxed text-white/75">
-                  An independent, membership-driven organisation supporting commerce and industry in the Maldives.
-                </p>
-                <Link
-                  to="/membership"
-                  className="relative mt-5 flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.04] py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-white/10"
-                >
-                  <Users className="h-4 w-4" aria-hidden="true" />
-                  Explore membership
-                </Link>
               </div>
             </div>
           </div>
